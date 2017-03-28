@@ -229,11 +229,11 @@ function Player(pos) {
             move.x -= 1
             // console.log("you're holding down 'a'")
         }
-        if (keys[s] || keys.DOWN) {
+        if (keys[s] || keys[DOWN]) {
             move.y += 1
             // console.log("you're holding down 's'")
         }
-        if (keys[d] || keys.RIGHT) {
+        if (keys[d] || keys[RIGHT]) {
             move.x += 1
             // console.log("you're holding down 'd'")
         }
@@ -327,7 +327,7 @@ function BossStateOnePatternOne(owner) {
     p.bulletoffset = (p.owner.im.width - 22) / 2
     p.create = async function() {
         var angle = Math.random() * 2 * Math.PI
-        var v = Vector(p.owner.pos.x + p.bulletoffset, p.owner.pos.y + p.bulletoffset + 30)
+        var v = Vector(p.owner.pos.x + p.bulletoffset, p.owner.pos.y + p.bulletoffset + 100)
         flower(v.clone(), 16, 300, angle)
         await sleep(100)
         flower(v.clone(), 16, 300, angle + Math.PI / 6)
@@ -337,7 +337,7 @@ function BossStateOnePatternOne(owner) {
     return p
 }
 
-function BossStateOne(owner) {
+function BossStateZero(owner) {
     var s1 = BossState(owner)
     s1.patterns[0] = BossStateOnePatternZero(s1.owner)
     s1.patterns[1] = BossStateOnePatternOne(s1.owner)
@@ -350,6 +350,7 @@ function BossStateOne(owner) {
                 s1.patterns[i].currentcooldown = s1.patterns[i].cooldown
             }
         }
+//        owner.movetowards(Vector(500, 500), 200)
     }
     return s1
 }
@@ -388,11 +389,22 @@ function Boss(pos) {
     p.im.style.objectPosition = "-128px -293px"
 
     p.states = []
-    p.states[0] = BossStateOne(p)
+    p.states[0] = BossStateZero(p)
     p.currentstate = p.states[0]
     p.addto = function(ele) {
         ele.appendChild(p.im)
         p.redraw()
+    }
+    p.movetowards = function(dest, speed) {
+        if (calculateDist(dest, p.pos) <= speed * delta / 1000) {
+            p.pos = dest.clone()
+            return true
+        }
+        var v = Vector(dest.x - p.pos.x, dest.y - p.pos.y)
+        var n = v.normalize()
+        p.pos.x += n.x * speed * delta / 1000
+        p.pos.y += n.y * speed * delta / 1000
+        return false
     }
     p.hitcenter = function() {
         return Vector(p.pos.x + (p.im.width - 1) / 2, p.pos.y - (p.im.height - 1) / 2)
@@ -413,6 +425,17 @@ function PlayerProjectile(pos) {
     p.im.width = 12
     p.im.height = 12
     p.im.style.objectPosition = "-99px -137px"
+
+/*
+    p.graphic = document.createElement("img")
+    p.graphic.src = "img/bullets.png"
+    p.graphic.style.position ="absolute"
+    p.graphic.style.objectFit = "none"
+    p.graphic.style.objectPosition = "-85px -85px"
+    p.graphic.width = 8
+    p.graphic.height = 16
+*/
+
     p.hbr = 5
     p.collided = false
     p.collideWithEnemy = function() {
@@ -423,6 +446,24 @@ function PlayerProjectile(pos) {
             console.log("Boss Health: " + boss.health)
         }
     }
+
+/*
+    p.addto = function(ele) {
+        ele.appendChild(p.im)
+        ele.appendChild(p.graphic)
+        p.redraw()
+    }
+    p.remove = function() {
+        p.im.remove()
+        p.graphic.remove()
+    }
+    p.redraw = function() {
+        //p.im.style.left = p.pos.x + "px"
+        //p.im.style.top = p.pos.y + "px"
+        p.graphic.style.left = p.pos.x + 2 + "px"
+        p.graphic.style.top = p.pos.y - 2 + "px"
+    }
+*/
     return p
 }
 
