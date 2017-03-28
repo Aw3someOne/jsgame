@@ -1,4 +1,4 @@
-const DELAY = 5
+const DELAY = 10
 const WIDTH  = 800
 const HEIGHT = 1000
 
@@ -37,9 +37,11 @@ onload = function() {
     normalgamestate = NormalGameState();
     currentstate = normalgamestate
 
-    player = Player(Vector(WIDTH / 2, HEIGHT - 30), 15)
+    player = Player(Vector(WIDTH / 2 - 8, HEIGHT - 30))
     player.addto(maindiv)
 
+    boss = Boss(Vector(WIDTH / 2 - 31, 30))
+    boss.addto(maindiv)
 /*
     for (let i = 0; i < 8; i++) {
         var x = Math.random() * WIDTH
@@ -50,6 +52,8 @@ onload = function() {
     }
 */
     gametimer = setInterval(gameLoop, 0)
+
+/*
     setInterval(function(){
         var x = Math.random() * (WIDTH - 200) + 100 // prevent spawning off screen
         var y = Math.random() * (HEIGHT / 2 - 200) + 100
@@ -65,7 +69,7 @@ onload = function() {
         await sleep(100)
         flower(Vector(x, y), 15, 16, 300, Math.PI / 3)
     }, 1500)
-
+*/
     var bgm = new Audio("bgm/alien.mp3")
     //bgm.play()
 }
@@ -106,7 +110,7 @@ function NormalGameState() {
             projectiles[i].update()
             if (!projectiles[i].checkbounds()) {
                 indx.push(i)
-                projectiles[i].remove(this)
+                projectiles[i].remove()
             }
         }
         // delete projectiles that are out of bounds
@@ -119,17 +123,29 @@ function NormalGameState() {
             playerprojectiles[i].update()
             if (!playerprojectiles[i].checkbounds()) {
                 indx.push(i)
-                playerprojectiles[i].remove(this)
+                playerprojectiles[i].remove()
             }
         }
         for (let i = indx.length - 1; i >= 0; i--) {
             playerprojectiles.splice(indx[i], 1)
         }
-        console.log(playerprojectiles.length)
 
         player.update()
+        boss.update()
         for (let i = 0; i < projectiles.length; i++) {
             projectiles[i].collideWithPlayer()
+        }
+
+        indx = []
+        for (let i = 0; i < playerprojectiles.length; i++) {
+            playerprojectiles[i].collideWithEnemy()
+            if (playerprojectiles[i].collided) {
+                indx.push(i)
+                playerprojectiles[i].remove()
+            }
+        }
+        for (let i = indx.length - 1; i >= 0; i--) {
+            playerprojectiles.splice(indx[i], 1)   
         }
     }
     return gs
@@ -163,7 +179,7 @@ function Vector(x, y) {
     return v
 }
 
-function flower(pos, r, count, speed, rot = Math.PI / 2) {
+function flower(pos, count, speed, rot = Math.PI / 2) {
     var step = 2 * Math.PI / count
     for (let i = 0; i < count; i++) {
         var angle = step * i + rot
@@ -174,7 +190,7 @@ function flower(pos, r, count, speed, rot = Math.PI / 2) {
     }
 }
 
-function Player(pos, r) {
+function Player(pos) {
     var p = {}
     p.pos = pos
     p.speed = 275
@@ -184,24 +200,15 @@ function Player(pos, r) {
     p.currentcd = 0
 
     p.im = document.createElement("img")
-
     p.im.src = "img/bullets.png"
     p.im.style.position = "absolute"
     p.im.style.objectFit = "none"
-
-/*
-//  D = 22
-    p.hbr = 9 // hitbox radius
-    p.im.width = 22
-    p.im.height = 22
-    p.im.style.objectPosition = "-101px -253px"
-*/
 
 //  D = 16
     p.hbr = 6.5
     p.im.width = 16
     p.im.height = 16
-    p.im.style.objectPosition = "-96px -68px"
+    p.im.style.objectPosition = "-97px -68px"
 
     p.addto = function(ele) {
         ele.appendChild(p.im)
@@ -258,11 +265,130 @@ function Player(pos, r) {
     return p
 }
 
+function Pattern(owner, cooldown = 500) {
+    var p = {}
+    p.owner = owner
+    p.cooldown = cooldown 
+    p.currentcooldown = p.cooldown
+
+    p.create = function() {
+        console.log("you forgot to do Patter::create")
+    }
+    return p
+}
+
+function BossStateOnePatternZero(owner) {
+    var p = Pattern(owner, 500)
+    p.right = true
+    p.bulletoffset = (p.owner.im.width - 22) / 2
+    p.create = function() {
+        flower(Vector(p.owner.pos.x + p.bulletoffset + (p.right ? 100 : -100), p.owner.pos.y + p.bulletoffset), 16, 300, Math.random() * 2 * Math.PI)
+        p.right = !p.right
+    }
+    return p
+}
+
+function BossStateOnePatternOne(owner) {
+    var p = Pattern(owner, 1500)
+    p.bulletoffset = (p.owner.im.width - 22) / 2
+    p.create = async function() {
+        var angle = Math.random() * 2 * Math.PI
+        var v = Vector(p.owner.pos.x + p.bulletoffset, p.owner.pos.y + p.bulletoffset + 30)
+        flower(v.clone(), 16, 300, angle)
+        await sleep(100)
+        flower(v.clone(), 16, 300, angle + Math.PI / 6)
+        await sleep(100)
+        flower(v.clone(), 16, 300, angle + Math.PI / 3)
+    }
+    return p
+}
+
+function BossStateOne(owner) {
+    var s1 = BossState(owner)
+    s1.patterns[0] = BossStateOnePatternZero(s1.owner)
+    s1.patterns[1] = BossStateOnePatternOne(s1.owner)
+
+    s1.update = async function() {
+        for (let i = 0; i < s1.patterns.length; i++) {
+            s1.patterns[i].currentcooldown -= delta
+            if (s1.patterns[i].currentcooldown <= 0) {
+                s1.patterns[i].create()
+                s1.patterns[i].currentcooldown = s1.patterns[i].cooldown
+            }
+        }
+    }
+    return s1
+}
+
+function BossState(owner) {
+    var state = {}
+    state.owner = owner
+    state.patterns = []
+    state.update = function() {
+        console.log("you forgot to override BossState::update()")
+    }
+    return state
+}
+
+function Boss(pos) {
+    var p = {}
+    p.pos = pos
+    p.health = 300
+
+    p.im = document.createElement("img")
+    p.im.src = "img/bullets.png"
+    p.im.style.position = "absolute"
+    p.im.style.objectFit = "none"
+/*
+//  D = 30
+    p.hbr = 10
+    p.im.width = 30
+    p.im.height = 30
+    p.im.style.objectPosition = "-66px -152px"
+*/
+
+//  D = 62
+    p.hbr = 24
+    p.im.width = 62
+    p.im.height = 62
+    p.im.style.objectPosition = "-128px -293px"
+
+    p.states = []
+    p.states[0] = BossStateOne(p)
+    p.currentstate = p.states[0]
+    p.addto = function(ele) {
+        ele.appendChild(p.im)
+        p.redraw()
+    }
+    p.hitcenter = function() {
+        return Vector(p.pos.x + (p.im.width - 1) / 2, p.pos.y - (p.im.height - 1) / 2)
+    }
+    p.update = function() {
+        p.currentstate.update()
+        p.redraw()
+    }
+    p.redraw = function() {
+        p.im.style.left = p.pos.x + "px"
+        p.im.style.top = p.pos.y + "px"
+    }
+    return p
+}
+
 function PlayerProjectile(pos) {
     var p = Projectile(pos, Vector(0, -500))
     p.im.width = 12
     p.im.height = 12
-    p.im.style.objectPosition = "-98px -137px"
+    p.im.style.objectPosition = "-99px -137px"
+    p.hbr = 5
+    p.collided = false
+    p.collideWithEnemy = function() {
+        var dist = calculateDist(p.hitcenter(), boss.hitcenter()) 
+        if (dist < p.hbr + boss.hbr) {
+            p.collided = true
+            boss.health--
+            console.log("Boss Health: " + boss.health)
+        }
+    }
     return p
 }
 
@@ -270,7 +396,7 @@ function Projectile1(pos, v) {
     var p = Projectile(pos, v, 9)
     p.im.width = 22
     p.im.height = 22
-    p.im.style.objectPosition = "-37px -253px"
+    p.im.style.objectPosition = "-38px -253px"
     return p
 }
 
