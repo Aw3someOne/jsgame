@@ -251,13 +251,47 @@ function Player(pos) {
         p.redraw()
     }
     p.fireprojectile = function() {
+        var innerleftv = p.pos.clone()
+        innerleftv.x -= 12
+        innerleftv.y += 2
+        var innerleft = PlayerProjectile(innerleftv)
+
+        var innerrightv = p.pos.clone()
+        innerrightv.x += 12
+        innerrightv.y += 2
+        var innerright = PlayerProjectile(innerrightv)
+
+        var outerleftv = innerleft.pos.clone()
+        outerleftv.x -= 12
+        var outerleft = PlayerProjectile(outerleftv)
+
+        var outerrightv = innerright.pos.clone()
+        outerrightv.x += 12
+        var outerright = PlayerProjectile(outerrightv)
+
+        playerprojectiles.push(innerleft)
+        innerleft.addto(maindiv)
+
+        playerprojectiles.push(innerright)
+        innerright.addto(maindiv)
+
+        playerprojectiles.push(outerleft)
+        outerleft.addto(maindiv)
+
+        playerprojectiles.push(outerright)
+        outerright.addto(maindiv)
+
+    }
+
+    /* old version -- single bullet
+    p.fireprojectile = function() {
         var v = p.pos.clone()
-        v.x += 2
         v.y += 2
         var proj = PlayerProjectile(v)
         playerprojectiles.push(proj)
         proj.addto(maindiv)
     }
+    */
     p.redraw = function() {
         p.im.style.left = p.pos.x + "px"
         p.im.style.top = p.pos.y + "px"
@@ -348,7 +382,7 @@ function Boss(pos) {
 */
 
 //  D = 62
-    p.hbr = 24
+    p.hbr = 31
     p.im.width = 62
     p.im.height = 62
     p.im.style.objectPosition = "-128px -293px"
