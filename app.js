@@ -1,8 +1,16 @@
-const DELAY = 1
+const DELAY = 5
 const WIDTH  = 800
 const HEIGHT = 1000
 
 const SHIFT = 16
+const SPACE = 32
+const LEFT = 37
+const UP = 38
+const RIGHT = 39
+const DOWN = 40
+
+const c = 67
+
 const w = 87
 const a = 65
 const s = 83
@@ -10,9 +18,11 @@ const d = 68
 
 const j = 74
 
+playerprojectiles = []
 projectiles = []
 timeOfLastUpdate = Date.now()
 keys = []
+autofire = false
 
 onload = function() {
     maindiv = document.createElement("div")
@@ -64,14 +74,11 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function demo() {
-    console.log('Taking a break...');
-    await sleep(2000);
-    console.log('Two second later');
-}
-
 onkeydown = function(e) {
     keys[e.keyCode] = true
+    if (e.keyCode == c) {
+        autofire = !autofire
+    }
 }
 
 onkeyup = function(e) {
@@ -102,13 +109,25 @@ function NormalGameState() {
                 projectiles[i].remove(this)
             }
         }
-
         // delete projectiles that are out of bounds
         for (let i = indx.length - 1; i >= 0; i--) { // delete in reverse order so indices don't break
             projectiles.splice(indx[i], 1)
         }
-        player.update()
 
+        indx = []
+        for (let i = 0; i < playerprojectiles.length; i++) {
+            playerprojectiles[i].update()
+            if (!playerprojectiles[i].checkbounds()) {
+                indx.push(i)
+                playerprojectiles[i].remove(this)
+            }
+        }
+        for (let i = indx.length - 1; i >= 0; i--) {
+            playerprojectiles.splice(indx[i], 1)
+        }
+        console.log(playerprojectiles.length)
+
+        player.update()
         for (let i = 0; i < projectiles.length; i++) {
             projectiles[i].collideWithPlayer()
         }
@@ -160,21 +179,23 @@ function Player(pos, r) {
     p.pos = pos
     p.speed = 275
     p.slow = 125
-    p.im = document.createElement("img")
 
-/*
-    p.im.src = "img/player.png"
-    p.im.style.position = "absolute"
-*/
+    p.guncd = 200
+    p.currentcd = 0
+
+    p.im = document.createElement("img")
 
     p.im.src = "img/bullets.png"
     p.im.style.position = "absolute"
     p.im.style.objectFit = "none"
+
+/*
 //  D = 22
     p.hbr = 9 // hitbox radius
     p.im.width = 22
     p.im.height = 22
     p.im.style.objectPosition = "-101px -253px"
+*/
 
 //  D = 16
     p.hbr = 6.5
@@ -190,23 +211,30 @@ function Player(pos, r) {
         return Vector(p.pos.x + (p.im.width - 1) / 2, p.pos.y - (p.im.height - 1) / 2)
     }
     p.update = function() {
+        p.currentcd -= delta
         var move = Vector(0, 0)
         var speed = keys[SHIFT] ? p.slow : p.speed // if j is held down, then slow speed
-        if (keys[w]) {
+        if (keys[w] || keys[UP]) {
             move.y -= 1
             // console.log("you're holding down 'w'")
         }
-        if (keys[a]) {
+        if (keys[a] || keys[LEFT]) {
             move.x -= 1
             // console.log("you're holding down 'a'")
         }
-        if (keys[s]) {
+        if (keys[s] || keys.DOWN) {
             move.y += 1
             // console.log("you're holding down 's'")
         }
-        if (keys[d]) {
+        if (keys[d] || keys.RIGHT) {
             move.x += 1
             // console.log("you're holding down 'd'")
+        }
+        if (keys[SPACE] || autofire) {
+            if (p.currentcd <= 0) {
+                p.fireprojectile()
+                p.currentcd = p.guncd
+            }
         }
         move = move.normalize() // direction to move
         p.pos.x += move.x * speed * delta / 1000
@@ -215,6 +243,14 @@ function Player(pos, r) {
         p.pos.y = Math.max(0, Math.min(HEIGHT - p.im.height, p.pos.y))
         p.redraw()
     }
+    p.fireprojectile = function() {
+        var v = p.pos.clone()
+        v.x += 2
+        v.y += 2
+        var proj = PlayerProjectile(v)
+        playerprojectiles.push(proj)
+        proj.addto(maindiv)
+    }
     p.redraw = function() {
         p.im.style.left = p.pos.x + "px"
         p.im.style.top = p.pos.y + "px"
@@ -222,8 +258,8 @@ function Player(pos, r) {
     return p
 }
 
-function PlayerBullet(pos) {
-    var p = Projectile(pos, Vector(0, -200))
+function PlayerProjectile(pos) {
+    var p = Projectile(pos, Vector(0, -500))
     p.im.width = 12
     p.im.height = 12
     p.im.style.objectPosition = "-98px -137px"
