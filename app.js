@@ -9,6 +9,7 @@ const UP = 38
 const RIGHT = 39
 const DOWN = 40
 
+const b = 66
 const c = 67
 
 const w = 87
@@ -198,6 +199,9 @@ function Player(pos) {
 
     p.guncd = 200
     p.currentcd = 0
+    p.bombs = 3
+    p.bombcd = 1000
+    p.currentbombcd = 0
 
     p.im = document.createElement("img")
     p.im.src = "img/bullets.png"
@@ -219,6 +223,7 @@ function Player(pos) {
     }
     p.update = function() {
         p.currentcd -= delta
+        p.currentbombcd -= delta
         var move = Vector(0, 0)
         var speed = keys[SHIFT] ? p.slow : p.speed // if j is held down, then slow speed
         if (keys[w] || keys[UP]) {
@@ -241,6 +246,16 @@ function Player(pos) {
             if (p.currentcd <= 0) {
                 p.fireprojectile()
                 p.currentcd = p.guncd
+            }
+        }
+        if (keys[b]) { // bomb
+            if (p.currentbombcd <= 0 && p.bombs > 0) {
+                for (let i = 0; i < projectiles.length; i++) {
+                    projectiles[i].im.remove()
+                }
+                projectiles = []
+                p.currentbombcd = p.bombcd
+                p.bombs--
             }
         }
         move = move.normalize() // direction to move
@@ -338,21 +353,28 @@ function BossStateOnePatternOne(owner) {
 }
 
 function BossStateZero(owner) {
-    var s1 = BossState(owner)
-    s1.patterns[0] = BossStateOnePatternZero(s1.owner)
-    s1.patterns[1] = BossStateOnePatternOne(s1.owner)
-
-    s1.update = async function() {
-        for (let i = 0; i < s1.patterns.length; i++) {
-            s1.patterns[i].currentcooldown -= delta
-            if (s1.patterns[i].currentcooldown <= 0) {
-                s1.patterns[i].create()
-                s1.patterns[i].currentcooldown = s1.patterns[i].cooldown
+    var state = BossState(owner)
+    state.patterns[0] = BossStateOnePatternZero(state.owner)
+    state.patterns[1] = BossStateOnePatternOne(state.owner)
+    state.points = []
+    state.points[0] = Vector(700 - 31, 100)
+    state.points[1] = Vector(400 - 31, 170)
+    state.points[2] = Vector(100 - 31, 100)
+    state.points[3] = Vector(400 - 31, 30)
+    state.currentdest = 0
+    state.update = async function() {
+        for (let i = 0; i < state.patterns.length; i++) {
+            state.patterns[i].currentcooldown -= delta
+            if (state.patterns[i].currentcooldown <= 0) {
+                state.patterns[i].create()
+                state.patterns[i].currentcooldown = state.patterns[i].cooldown
             }
         }
-//        owner.movetowards(Vector(500, 500), 200)
+        if (owner.movetowards(state.points[state.currentdest], 75)) {
+            state.currentdest = ++state.currentdest % state.points.length
+        }
     }
-    return s1
+    return state
 }
 
 function BossState(owner) {
