@@ -2,7 +2,7 @@
 
 const BULLETPNG = "img/bullets.png"
 
-const DELAY = 5 
+const DELAY = 16 
 const WIDTH = 800
 const HEIGHT = 1000
 
@@ -52,11 +52,14 @@ onload = function() {
     timeOfLastUpdate = Date.now()
 
     player = new Player()
+    player.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE16))
+
     player.position = new Vector((WIDTH - player.hitbox.image.width) / 2, HEIGHT - 50)
     player.addto(mainDiv)
     player.redraw()
 
     enemy = new Boss()
+    enemy.setHitBox(HitBoxFactory.createHitBox(HitBoxType.GREEN62))
     enemy.position = new Vector((WIDTH - enemy.hitbox.image.width) / 2, 50)
     enemy.addto(mainDiv)
     enemy.redraw()

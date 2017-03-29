@@ -1,15 +1,18 @@
 "use strict"
 
 class GameObject {
-    constructor(position = new Vector(), hitboxType = HitBoxType.RED22) {
+    constructor(position = new Vector()) {
         this.position = position
-        this.hitbox = HitBoxFactory.createHitBox(hitboxType)
+        this.hitbox
     }
     update() {
         throw new Error("GameObject::update not overridden")
     }
     checkCollision() {
         throw new Error("GameObject::checkCollision not overridden")
+    }
+    setHitBox(hitbox) {
+        this.hitbox = hitbox
     }
     addto(element) {
         element.appendChild(this.hitbox.image)
@@ -35,8 +38,8 @@ class GameObject {
 }
 
 class Bullet extends GameObject {
-    constructor(position = new Vector(), velocity = new Vector(), hitboxType = HitBoxType.RED22) {
-        super(position, hitboxType)
+    constructor(position = new Vector(), velocity = new Vector()) {
+        super(position)
         this.velocity = velocity
     }
     update() {
@@ -47,8 +50,8 @@ class Bullet extends GameObject {
 }
 
 class PlayerBullet extends Bullet {
-    constructor(position = new Vector(), velocity = new Vector(0, -500), hitboxType = HitBoxType.BLUE12) {
-        super(position, velocity, hitboxType)
+    constructor(position = new Vector(), velocity = new Vector(0, -500)) {
+        super(position, velocity)
     }
     addto(element) {
         super.addto(element)
@@ -66,8 +69,8 @@ class PlayerBullet extends Bullet {
 }
 
 class EnemyBullet extends Bullet {
-    constructor(position = new Vector(), velocity = new Vector(), hitboxType = HitBoxType.RED22) {
-        super(position, velocity, hitboxType)
+    constructor(position = new Vector(), velocity = new Vector()) {
+        super(position, velocity)
     }
     addto(element) {
         super.addto(element)
@@ -83,8 +86,8 @@ class EnemyBullet extends Bullet {
 }
 
 class Player extends GameObject {
-    constructor(position = new Vector(), hitboxType = HitBoxType.BLUE16) {
-        super(position, hitboxType)
+    constructor(position = new Vector()) {
+        super(position)
         this.normalSpeed = 275
         this.slowSpeed = 125
         this.gunCooldown = 200
@@ -140,21 +143,25 @@ class Player extends GameObject {
         var innerleftv = this.position.clone()
         innerleftv.x -= 12
         innerleftv.y += 2
+
         var innerleft = new PlayerBullet(innerleftv)
-        
+        innerleft.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE12))
 
         var innerrightv = this.position.clone()
         innerrightv.x += 12
         innerrightv.y += 2
         var innerright = new PlayerBullet(innerrightv)
+        innerright.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE12))
 
         var outerleftv = innerleft.position.clone()
         outerleftv.x -= 12
         var outerleft = new PlayerBullet(outerleftv)
+        outerleft.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE12))
 
         var outerrightv = innerright.position.clone()
         outerrightv.x += 12
         var outerright = new PlayerBullet(outerrightv)
+        outerright.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE12))
 
         playerBullets.push(innerleft)
         innerleft.addto(mainDiv)
@@ -171,8 +178,8 @@ class Player extends GameObject {
 }
 
 class Enemy extends GameObject {
-    constructor(position = new Vector(), hitboxType = HitBoxType.RED22, health = 1) {
-        super(position, hitboxType)
+    constructor(position = new Vector(), health = 1) {
+        super(position)
         this.health = health
         this.states = []
         this.currentState
@@ -180,8 +187,8 @@ class Enemy extends GameObject {
 }
 
 class Boss extends Enemy {
-    constructor(position = new Vector(), hitboxType = HitBoxType.GREEN62, health = 1000) {
-        super(position, hitboxType, health)
+    constructor(position = new Vector(), health = 1000) {
+        super(position, health)
         this.states[0] = new BossStateZero(this)
         this.currentState = this.states[0]
     }
