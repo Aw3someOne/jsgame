@@ -1,12 +1,5 @@
 "use strict"
 
-const HitBoxType = {
-    RED22 : 0,
-    BLUE12: 1,
-    BLUE16: 2,
-    GREEN62: 3,
-}
-
 class GameObject {
     constructor(position = new Vector(), hitboxType = HitBoxType.RED22) {
         this.position = position
@@ -20,6 +13,7 @@ class GameObject {
     }
     addto(element) {
         element.appendChild(this.hitbox.image)
+        this.redraw()
     }
     remove() {
         this.hitbox.image.remove()
@@ -42,9 +36,8 @@ class GameObject {
 
 class Bullet extends GameObject {
     constructor(position = new Vector(), velocity = new Vector(), hitboxType = HitBoxType.RED22) {
-        super(position, bitboxType)
+        super(position, hitboxType)
         this.velocity = velocity
-        this.collided = false
     }
     update() {
         this.position.x += this.velocity.x * deltaSeconds
@@ -54,7 +47,7 @@ class Bullet extends GameObject {
 }
 
 class PlayerBullet extends Bullet {
-    constructor(position = new Vector(), velocity = new Vector(), hitboxType = HitBoxType.BLUE12) {
+    constructor(position = new Vector(), velocity = new Vector(0, -500), hitboxType = HitBoxType.BLUE12) {
         super(position, velocity, hitboxType)
     }
     addto(element) {
@@ -64,10 +57,11 @@ class PlayerBullet extends Bullet {
     checkCollision() {
         var dist = calculateDistance(this.getCenter(), enemy.getCenter())
         if (dist < this.hitbox.radius + enemy.hitbox.radius) {
-            this.collided = true
             enemy.health--
             console.log("Enemy Health: " + enemy.health)
+            return true
         }
+        return false
     }
 }
 
@@ -80,8 +74,8 @@ class EnemyBullet extends Bullet {
         enemyBullets.push(this)
     }
     checkCollision() {
-        var dist = calculateDistance(this.getCenter(), enemy.getCenter())
-        if (dist < this.hitbox.radius + enemy.hitbox.radius) {
+        var dist = calculateDistance(this.getCenter(), player.getCenter())
+        if (dist < this.hitbox.radius + player.hitbox.radius) {
             clearInterval(mainTimer)
             keys = []
         }
@@ -91,6 +85,88 @@ class EnemyBullet extends Bullet {
 class Player extends GameObject {
     constructor(position = new Vector(), hitboxType = HitBoxType.BLUE16) {
         super(position, hitboxType)
+        this.normalSpeed = 275
+        this.slowSpeed = 125
+        this.gunCooldown = 200
+        this.bombCooldown = 1000
+        this.currentGunCooldown = 0
+        this.currentBombCooldown = 0
+        this.bombs = 3
+    }
+    update() {
+        this.currentGunCooldown -= deltaTime
+        this.currentBombCooldown -= deltaTime
+        var moveVector = new Vector()
+        var speed = keys[SHIFT] ? this.slowSpeed : this.normalSpeed // if shift is held down, then slow speed
+        if (keys[w] || keys[UP]) {
+            moveVector.y -= 1
+            // console.log("you're holding down 'w'")
+        }
+        if (keys[a] || keys[LEFT]) {
+            moveVector.x -= 1
+            // console.log("you're holding down 'a'")
+        }
+        if (keys[s] || keys[DOWN]) {
+            moveVector.y += 1
+            // console.log("you're holding down 's'")
+        }
+        if (keys[d] || keys[RIGHT]) {
+            moveVector.x += 1
+            // console.log("you're holding down 'd'")
+        }
+        if (keys[SPACE] || autofire) {
+            if (this.currentGunCooldown <= 0) {
+                this.fireBullet()
+                this.currentGunCooldown = this.gunCooldown
+            }
+        }
+        if (keys[b]) {
+            if (this.currentBombCooldown <= 0 && this.bombs > 0) {
+                for (let i = 0; i < enemyBullets.length; i++) {
+                    enemyBullets[i].remove()
+                }
+                enemyBullets = []
+                this.currentBombCooldown = this.bombCooldown
+                this.bombs--
+            }
+        }
+        moveVector = moveVector.normalize()
+        this.position.x += moveVector.x * speed * deltaSeconds
+        this.position.y += moveVector.y * speed * deltaSeconds
+        this.position.x = Math.max(0, Math.min(WIDTH - this.hitbox.image.width, this.position.x))
+        this.position.y = Math.max(0, Math.min(HEIGHT - this.hitbox.image.height, this.position.y))
+    }
+    fireBullet() {
+        var innerleftv = this.position.clone()
+        innerleftv.x -= 12
+        innerleftv.y += 2
+        var innerleft = new PlayerBullet(innerleftv)
+        
+
+        var innerrightv = this.position.clone()
+        innerrightv.x += 12
+        innerrightv.y += 2
+        var innerright = new PlayerBullet(innerrightv)
+
+        var outerleftv = innerleft.position.clone()
+        outerleftv.x -= 12
+        var outerleft = new PlayerBullet(outerleftv)
+
+        var outerrightv = innerright.position.clone()
+        outerrightv.x += 12
+        var outerright = new PlayerBullet(outerrightv)
+
+        playerBullets.push(innerleft)
+        innerleft.addto(mainDiv)
+
+        playerBullets.push(innerright)
+        innerright.addto(mainDiv)
+
+        playerBullets.push(outerleft)
+        outerleft.addto(mainDiv)
+
+        playerBullets.push(outerright)
+        outerright.addto(mainDiv)
     }
 }
 
@@ -98,12 +174,31 @@ class Enemy extends GameObject {
     constructor(position = new Vector(), hitboxType = HitBoxType.RED22, health = 1) {
         super(position, hitboxType)
         this.health = health
+        this.states = []
+        this.currentState
     }
 }
 
 class Boss extends Enemy {
-    constructor(position = new Vector(), hitboxType = HitBoxType.RED22, health = 1000) {
+    constructor(position = new Vector(), hitboxType = HitBoxType.GREEN62, health = 1000) {
         super(position, hitboxType, health)
+        this.states[0] = new BossStateZero(this)
+        this.currentState = this.states[0]
+    }
+    moveTowards(destination, speed) {
+        if (calculateDistance(destination, this.position) <= speed * deltaSeconds) {
+            this.position.x = destination.x
+            this.position.y = destination.y
+            return true
+        }
+        var direction = new Vector(destination.x - this.position.x, destination.y - this.position.y)
+        var normal = direction.normalize()
+        this.position.x += normal.x * speed * deltaSeconds
+        this.position.y += normal.y * speed * deltaSeconds
+        return false
+    }
+    update() {
+        this.currentState.update()
     }
 }
 
@@ -120,6 +215,18 @@ class HitBox {
     }
 }
 
+const HitBoxType = {
+    BLUE12:     0,
+    BLUE16:     1,
+    RED22:      22,
+    PURPLE22:   23,
+    BLUE22:     24,
+    CYAN22:     25,
+    GREEN22:    26,
+    YELLOW22:   27,
+    GREEN62:    62,
+}
+
 class HitBoxFactory {
     constructor() {}
     static createHitBox(hitboxType = HitBoxType.RED22) {
@@ -132,6 +239,17 @@ class HitBoxFactory {
             return new HitBox(BULLETPNG, "-97px -68px", new Vector(16, 16), 6.5)
         case HitBoxType.GREEN62:
             return new HitBox(BULLETPNG, "-128px -293px", new Vector(62, 62), 31)
+        case HitBoxType.PURPLE22:
+            return new HitBox(BULLETPNG, "-70px -253px", new Vector(22, 22), 9)
+        case HitBoxType.BLUE22:
+            return new HitBox(BULLETPNG, "-102px -253px", new Vector(22, 22), 9)
+        case HitBoxType.CYAN22:
+            return new HitBox(BULLETPNG, "-134px -253px", new Vector(22, 22), 9)
+        case HitBoxType.GREEN22:
+            return new HitBox(BULLETPNG, "-166px -253px", new Vector(22, 22), 9)
+        case HitBoxType.YELLOW22:
+            return new HitBox(BULLETPNG, "-198px -253px", new Vector(22, 22), 9)
+
         }
     }
 }

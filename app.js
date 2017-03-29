@@ -17,8 +17,6 @@ const a = 65
 const s = 83
 const d = 68
 
-const j = 74
-
 playerprojectiles = []
 projectiles = []
 timeOfLastUpdate = Date.now()

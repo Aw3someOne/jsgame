@@ -2,7 +2,7 @@
 
 const BULLETPNG = "img/bullets.png"
 
-const DELAY = 10
+const DELAY = 5 
 const WIDTH = 800
 const HEIGHT = 1000
 
@@ -29,7 +29,6 @@ var deltaSeconds
 var timeOfLastUpdate
 var keys = []
 var autofire = false
-var invalidBullets = [] // indices of invalid bullets
 var playerBullets = []
 var enemyBullets = []
 
@@ -47,10 +46,20 @@ onload = function() {
     mainDiv.style.maxHeight = HEIGHT
     mainDiv.style.backgroundColor = "CCC"
     document.body.appendChild(mainDiv)
-
+    
     normalGameState = new NormalGameState()
     currentGameState = normalGameState
     timeOfLastUpdate = Date.now()
+
+    player = new Player()
+    player.position = new Vector((WIDTH - player.hitbox.image.width) / 2, HEIGHT - 50)
+    player.addto(mainDiv)
+    player.redraw()
+
+    enemy = new Boss()
+    enemy.position = new Vector((WIDTH - enemy.hitbox.image.width) / 2, 50)
+    enemy.addto(mainDiv)
+    enemy.redraw()
 
     mainTimer = setInterval(mainLoop, 1)
 }
@@ -68,4 +77,15 @@ function mainLoop() {
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+onkeydown = function(e) {
+    keys[e.keyCode] = true
+    if (e.keyCode == c) {
+        autofire = !autofire
+    }
+}
+
+onkeyup = function(e) {
+    keys[e.keyCode] = false
 }

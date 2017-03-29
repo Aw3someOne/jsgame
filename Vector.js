@@ -13,11 +13,11 @@ class Vector {
             (this.y < 0 ? 2 * Math.PI : 0)))
     }
     clone() {
-        return Vector(this.x, this.y)
+        return new Vector(this.x, this.y)
     }
     normalize() {
         if (this.x == 0 && this.y == 0) {
-            return Vector()
+            return new Vector()
         }
         var normal = this.clone()
         var magnitude = this.magnitude()
