@@ -24,6 +24,7 @@ class NormalGameState extends GameState {
             if (!enemyBullets[i].checkBounds()) {
                 enemyBullets[i].remove()
                 enemyBullets.splice(i, 1)
+                continue
             }
             enemyBullets[i].checkCollision()
         }

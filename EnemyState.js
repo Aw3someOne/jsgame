@@ -8,7 +8,8 @@ class Pattern {
         this.hitboxType = hitboxType
         this.freezeCooldown = false
         this.bullet = new EnemyBullet(new Vector(), new Vector())
-        this.bullet.setHitBox(HitBoxFactory.createHitBox(hitboxType))
+        //this.bullet.setHitBox(HitBoxFactory.createHitBox(hitboxType))
+        this.bullet.setHitBox(hitboxPool.request(hitboxType))
     }
     createPattern() {
         throw new Error("Pattern::createPattern() not overridden")
@@ -25,7 +26,6 @@ class EnemyState {
     }
 }
 
-/*
 class SpiralPattern extends Pattern {
     constructor(enemy, cooldown = 1000, initialCooldown = 0, hitboxType = HitBoxType.RED22) {
         super(enemy, cooldown, initialCooldown, hitboxType)
@@ -40,6 +40,7 @@ class SpiralPattern extends Pattern {
             var angle = step * i + rot
             var v = new Vector(speed * Math.cos(angle), speed * Math.sin(angle))
             var bullet = new EnemyBullet(position.clone(), v.clone(), this.hitboxType)
+            bullet.setHitBox(HitBoxFactory.createHitBox(this.hitboxType))
             bullet.position.x += (enemy.hitbox.image.width - bullet.hitbox.image.width) / 2
             bullet.position.y += (enemy.hitbox.image.height - bullet.hitbox.image.height) / 2
             enemyBullets.push(bullet)
@@ -49,7 +50,6 @@ class SpiralPattern extends Pattern {
         this.freezeCooldown = false
     }
 }
-*/
 
 class FlowerPattern extends Pattern {
     constructor(enemy, cooldown = 500, initialCooldown = 0, hitboxType = HitBoxType.RED22, count = 16, speed = 200, rot = Math.PI / 2) {
@@ -73,6 +73,7 @@ class FlowerPattern extends Pattern {
             var bullet = new EnemyBullet(new Vector(enemy.position.x + (enemy.hitbox.image.width - this.bullet.hitbox.image.width) / 2,
                 enemy.position.y + (enemy.hitbox.image.height - this.bullet.hitbox.image.height) / 2), this.vectors[i])
             bullet.setHitBox(HitBoxFactory.createHitBox(this.hitboxType))
+            //bullet.setHitBox(hitboxPool.request(this.hitboxType))
             enemyBullets.push(bullet)
             bullet.addto(mainDiv)
         }
@@ -88,10 +89,11 @@ class BossStateZero extends EnemyState {
         this.points[2] = new Vector(100 - 31, 100)
         this.points[3] = new Vector(400 - 31, 30)
         this.currentdest = 0
-        this.patterns.push(new FlowerPattern(enemy, 1500, 0, HitBoxType.RED22, 32, 100, Math.PI / 2))
-        this.patterns.push(new FlowerPattern(enemy, 1500, 100, HitBoxType.RED22, 32, 100, 2 * Math.PI / 3))
-        //this.patterns.push(new FlowerPattern(enemy, 1500, 200, HitBoxType.RED22, 32, 100, 5 * Math.PI / 6))
-        // this.patterns.push(new SpiralPattern(enemy))
+        this.patterns.push(new FlowerPattern(enemy, 1500, 0, HitBoxType.GREEN22, 32, 75, Math.PI / 2))
+        this.patterns.push(new FlowerPattern(enemy, 1500, 100, HitBoxType.CYAN22, 32, 75, 2 * Math.PI / 3))
+        this.patterns.push(new FlowerPattern(enemy, 1500, 200, HitBoxType.RED22, 32, 75, 5 * Math.PI / 6))
+        //this.patterns.push(new SpiralPattern(enemy))
+        //this.patterns.push(new SpiralPattern(enemy, 1000, 200))
     }
     update() {
         for (let i = 0; i < this.patterns.length; i++) {
@@ -100,7 +102,7 @@ class BossStateZero extends EnemyState {
             }
             if (this.patterns[i].currentCooldown <= 0) {
                 this.patterns[i].createPattern()
-                this.patterns[i].currentCooldown = this.patterns[i].cooldown
+                this.patterns[i].currentCooldown += this.patterns[i].cooldown
             }
         }
         if (enemy.moveTowards(this.points[this.currentdest], 75)) {

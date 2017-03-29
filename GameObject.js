@@ -20,6 +20,7 @@ class GameObject {
     }
     remove() {
         this.hitbox.image.remove()
+        hitboxPool.returnToPool(this.hitbox)
     }
     getCenter() {
         return new Vector(this.position.x + (this.hitbox.image.width - 1) / 2, this.position.y - (this.hitbox.image.height - 1) / 2)
@@ -145,23 +146,30 @@ class Player extends GameObject {
         innerleftv.y += 2
 
         var innerleft = new PlayerBullet(innerleftv)
-        innerleft.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE12))
 
         var innerrightv = this.position.clone()
         innerrightv.x += 12
         innerrightv.y += 2
         var innerright = new PlayerBullet(innerrightv)
-        innerright.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE12))
 
         var outerleftv = innerleft.position.clone()
         outerleftv.x -= 12
         var outerleft = new PlayerBullet(outerleftv)
-        outerleft.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE12))
 
         var outerrightv = innerright.position.clone()
         outerrightv.x += 12
         var outerright = new PlayerBullet(outerrightv)
+
+        innerleft.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE12))
+        innerright.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE12))
+        outerleft.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE12))
         outerright.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE12))
+        /*
+        innerleft.setHitBox(hitboxPool.request(HitBoxType.BLUE12))
+        innerright.setHitBox(hitboxPool.request(HitBoxType.BLUE12))
+        outerleft.setHitBox(hitboxPool.request(HitBoxType.BLUE12))
+        outerright.setHitBox(hitboxPool.request(HitBoxType.BLUE12))
+        */
 
         playerBullets.push(innerleft)
         innerleft.addto(mainDiv)
@@ -210,7 +218,8 @@ class Boss extends Enemy {
 }
 
 class HitBox {
-    constructor(imagesrc = BULLETPNG, objectPosition = "",  imageDimensions = new Vector(), radius = 0) {
+    constructor(hitboxType, imagesrc = BULLETPNG, objectPosition = "",  imageDimensions = new Vector(), radius = 0) {
+        this.hitboxType = hitboxType
         this.image = document.createElement("img")
         this.image.src = imagesrc
         this.image.style.position = "absolute"
@@ -234,28 +243,58 @@ const HitBoxType = {
     GREEN62:    62,
 }
 
+class HitBoxPool {
+    constructor(poolsize = 500) {
+        this.pool = []
+        this.populatePool(HitBoxType.BLUE12, poolsize) 
+        this.populatePool(HitBoxType.BLUE16, poolsize) 
+        this.populatePool(HitBoxType.RED22, poolsize)
+        this.populatePool(HitBoxType.PURPLE22, poolsize)
+        this.populatePool(HitBoxType.BLUE22, poolsize)
+        this.populatePool(HitBoxType.CYAN22, poolsize)
+        this.populatePool(HitBoxType.GREEN22, poolsize)
+        this.populatePool(HitBoxType.YELLOW22, poolsize)
+        this.populatePool(HitBoxType.GREEN62, poolsize)
+    }
+    populatePool(hitboxType, poolsize) {
+        this.pool[hitboxType] = []
+        while (this.pool[hitboxType].length < poolsize) {
+            this.pool[hitboxType].push(HitBoxFactory.createHitBox(hitboxType))
+        }
+    }
+    request(hitboxType) {
+        if (this.pool[hitboxType].length == 0) {
+            this.populatePool(hitboxType, 15)
+        }
+        return this.pool[hitboxType].pop()
+    }
+    returnToPool(hitbox) {
+        this.pool[hitbox.hitboxType].push(hitbox);
+    }
+}
+
 class HitBoxFactory {
     constructor() {}
     static createHitBox(hitboxType = HitBoxType.RED22) {
         switch (hitboxType) {
         case HitBoxType.RED22:
-            return new HitBox(BULLETPNG, "-38px -253px", new Vector(22, 22), 9)
+            return new HitBox(HitBoxType.RED22, BULLETPNG, "-38px -253px", new Vector(22, 22), 9)
         case HitBoxType.BLUE12:
-            return new HitBox(BULLETPNG, "-99px -137px", new Vector(12, 12), 5)
+            return new HitBox(HitBoxType.BLUE12, BULLETPNG, "-99px -137px", new Vector(12, 12), 5)
         case HitBoxType.BLUE16:
-            return new HitBox(BULLETPNG, "-97px -68px", new Vector(16, 16), 6.5)
+            return new HitBox(HitBoxType.BLUE16, BULLETPNG, "-97px -68px", new Vector(16, 16), 6.5)
         case HitBoxType.GREEN62:
-            return new HitBox(BULLETPNG, "-128px -293px", new Vector(62, 62), 31)
+            return new HitBox(HitBoxType.GREEN62, BULLETPNG, "-128px -293px", new Vector(62, 62), 31)
         case HitBoxType.PURPLE22:
-            return new HitBox(BULLETPNG, "-70px -253px", new Vector(22, 22), 9)
+            return new HitBox(HitBoxType.PURPLE22 ,BULLETPNG, "-70px -253px", new Vector(22, 22), 9)
         case HitBoxType.BLUE22:
-            return new HitBox(BULLETPNG, "-102px -253px", new Vector(22, 22), 9)
+            return new HitBox(HitBoxType.BLUE22, BULLETPNG, "-102px -253px", new Vector(22, 22), 9)
         case HitBoxType.CYAN22:
-            return new HitBox(BULLETPNG, "-134px -253px", new Vector(22, 22), 9)
+            return new HitBox(HitBoxType.CYAN22, BULLETPNG, "-134px -253px", new Vector(22, 22), 9)
         case HitBoxType.GREEN22:
-            return new HitBox(BULLETPNG, "-166px -253px", new Vector(22, 22), 9)
+            return new HitBox(HitBoxType.GREEN22, BULLETPNG, "-166px -253px", new Vector(22, 22), 9)
         case HitBoxType.YELLOW22:
-            return new HitBox(BULLETPNG, "-198px -253px", new Vector(22, 22), 9)
+            return new HitBox(HitBoxType.YELLOW22, BULLETPNG, "-198px -253px", new Vector(22, 22), 9)
 
         }
     }

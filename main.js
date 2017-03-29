@@ -22,6 +22,7 @@ const s = 83
 const d = 68
 
 var mainDiv
+
 var normalGameState
 var currentGameState
 var deltaTime
@@ -37,6 +38,8 @@ var enemy
 
 var mainTimer
 
+var hitboxPool = new HitBoxPool(300)
+
 onload = function() {
     mainDiv = document.createElement("div")
     mainDiv.id = "main"
@@ -46,20 +49,21 @@ onload = function() {
     mainDiv.style.maxHeight = HEIGHT
     mainDiv.style.backgroundColor = "CCC"
     document.body.appendChild(mainDiv)
-    
     normalGameState = new NormalGameState()
     currentGameState = normalGameState
     timeOfLastUpdate = Date.now()
 
     player = new Player()
-    player.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE16))
+    //player.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE16))
+    player.setHitBox(hitboxPool.request(HitBoxType.BLUE16))
 
     player.position = new Vector((WIDTH - player.hitbox.image.width) / 2, HEIGHT - 50)
     player.addto(mainDiv)
     player.redraw()
 
     enemy = new Boss()
-    enemy.setHitBox(HitBoxFactory.createHitBox(HitBoxType.GREEN62))
+    //enemy.setHitBox(HitBoxFactory.createHitBox(HitBoxType.GREEN62))
+    enemy.setHitBox(hitboxPool.request(HitBoxType.GREEN62))
     enemy.position = new Vector((WIDTH - enemy.hitbox.image.width) / 2, 50)
     enemy.addto(mainDiv)
     enemy.redraw()
