@@ -1,9 +1,10 @@
 "use strict"
 
 class GameObject {
-    constructor(position = new Vector(), hitboxType = HitBoxType.RED22) {
+    constructor(position = new Vector(), hitboxType = HitBoxType.RED22, rotation = 0) {
         this.position = position
         this.hitboxType = hitboxType
+        this.rotation = rotation
     }
     update() {
         throw new Error("GameObject::update not overridden")
@@ -11,21 +12,46 @@ class GameObject {
     checkCollision() {
         throw new Error("GameObject::checkCollision not overridden")
     }
-    getCenter() {
-        return new Vector(Math.round(this.position.x) + (hitBoxes[this.hitboxType].width - 1) / 2, Math.round(this.position.y) - (hitBoxes[this.hitboxType].height - 1) / 2)
+    getVertices() {
+        var vertices = []
+        for (let i = 0; i < hitBoxes[this.hitboxType].vertices.length; i++) {
+            vertices[i] = this.position.add(hitBoxes[this.hitboxType].vertices[i])
+        }
+        return vertices
     }
+    getCenter() {
+        return new Vector(this.position.x + (hitBoxes[this.hitboxType].width - 1) / 2, this.position.y - (hitBoxes[this.hitboxType].height - 1) / 2)
+    }
+
     redraw(context = enemyBulletContext) {
-        context.drawImage(
-            bulletSheet,
-            hitBoxes[this.hitboxType].x,
-            hitBoxes[this.hitboxType].y,
-            hitBoxes[this.hitboxType].width,
-            hitBoxes[this.hitboxType].height,
-            Math.round(this.position.x),
-            Math.round(this.position.y),
-            hitBoxes[this.hitboxType].width,
-            hitBoxes[this.hitboxType].height
-        )
+        context.save()
+        if (this.rotation) {
+            context.translate(this.position.x + hitBoxes[this.hitboxType].width / 2,
+                this.position.y + hitBoxes[this.hitboxType].height / 2)
+            context.rotate(this.rotation)
+            context.drawImage(
+                bulletSheet,
+                hitBoxes[this.hitboxType].x,
+                hitBoxes[this.hitboxType].y,
+                hitBoxes[this.hitboxType].width,
+                hitBoxes[this.hitboxType].height,
+                -hitBoxes[this.hitboxType].width / 2,
+                -hitBoxes[this.hitboxType].height / 2,
+                hitBoxes[this.hitboxType].width,
+                hitBoxes[this.hitboxType].height)
+            context.restore()
+        } else {
+            context.drawImage(
+                bulletSheet,
+                hitBoxes[this.hitboxType].x,
+                hitBoxes[this.hitboxType].y,
+                hitBoxes[this.hitboxType].width,
+                hitBoxes[this.hitboxType].height,
+                Math.floor(this.position.x),
+                Math.floor(this.position.y),
+                hitBoxes[this.hitboxType].width,
+                hitBoxes[this.hitboxType].height)
+        }
     }
     checkBounds() {
         if (this.position.x < -hitBoxes[this.hitboxType].width || this.position.x > WIDTH
@@ -37,8 +63,8 @@ class GameObject {
 }
 
 class Bullet extends GameObject {
-    constructor(position = new Vector(), velocity = new Vector(), hitboxType = HitBoxType.RED22) {
-        super(position, hitboxType)
+    constructor(position = new Vector(), velocity = new Vector(), hitboxType = HitBoxType.RED22, rotation = 0) {
+        super(position, hitboxType, rotation)
         this.velocity = velocity
     }
     update() {
@@ -49,8 +75,8 @@ class Bullet extends GameObject {
 }
 
 class PlayerBullet extends Bullet {
-    constructor(position = new Vector(), velocity = new Vector(0, -1500), hitboxType = HitBoxType.BLUE12) {
-        super(position, velocity, hitboxType)
+    constructor(position = new Vector(), velocity = new Vector(0, -1500), hitboxType = HitBoxType.REDKUNAI, rotation = Math.PI) {
+        super(position, velocity, hitboxType, rotation)
     }
     checkCollision() {
         var dist = calculateDistance(this.getCenter(), enemy.getCenter())
@@ -61,24 +87,34 @@ class PlayerBullet extends Bullet {
         }
         return false
     }
+    redraw() {
+        super.redraw(playerBulletContext)
+    }
 }
 
 class EnemyBullet extends Bullet {
-    constructor(position = new Vector(), velocity = new Vector(), hitboxType = HitBoxType.RED22) {
-        super(position, velocity, hitboxType)
+    constructor(position = new Vector(), velocity = new Vector(), hitboxType = HitBoxType.RED22, rotation = 0) {
+        super(position, velocity, hitboxType, rotation)
     }
     checkCollision() {
+        if (collisionTest(this, player)) {
+            clearInterval(mainTimer)
+            keys = []
+        }
+        /*
         var dist = calculateDistance(this.getCenter(), player.getCenter())
         if (dist < hitBoxes[this.hitboxType].radius + hitBoxes[player.hitboxType].radius) {
             clearInterval(mainTimer)
             keys = []
         }
+        */
     }
 }
 
 class Player extends GameObject {
     constructor(position = new Vector(), hitboxType = HitBoxType.BLUE16) {
         super(position, hitboxType)
+        this.bulletHitBoxType = HitBoxType.REDKUNAI
         this.normalSpeed = 425
         this.slowSpeed = 125
         this.gunCooldown = 50
@@ -129,23 +165,23 @@ class Player extends GameObject {
     }
     fireBullet() {
         var innerleftv = this.position.clone()
-        innerleftv.x -= 12
+        innerleftv.x -= hitBoxes[this.bulletHitBoxType].width
         innerleftv.y += 2
 
-        var innerleft = new PlayerBullet(innerleftv)
+        var innerleft = new PlayerBullet(innerleftv, new Vector(0, -1500), this.bulletHitBoxType)
 
         var innerrightv = this.position.clone()
-        innerrightv.x += 16
+        innerrightv.x += hitBoxes[this.hitboxType].width
         innerrightv.y += 2
-        var innerright = new PlayerBullet(innerrightv)
+        var innerright = new PlayerBullet(innerrightv, new Vector(0, -1500), this.bulletHitBoxType)
 
         var outerleftv = innerleft.position.clone()
-        outerleftv.x -= 12
-        var outerleft = new PlayerBullet(outerleftv)
+        outerleftv.x -= hitBoxes[this.bulletHitBoxType].width
+        var outerleft = new PlayerBullet(outerleftv, new Vector(0, -1500), this.bulletHitBoxType)
 
         var outerrightv = innerright.position.clone()
-        outerrightv.x += 12
-        var outerright = new PlayerBullet(outerrightv)
+        outerrightv.x += hitBoxes[this.bulletHitBoxType].width
+        var outerright = new PlayerBullet(outerrightv, new Vector(0, -1500), this.bulletHitBoxType)
 
         playerBullets.push(innerleft)
         playerBullets.push(innerright)
@@ -158,13 +194,14 @@ class Enemy extends GameObject {
     constructor(position = new Vector(), hitboxType = HitBoxType.RED22, health = 1) {
         super(position, hitboxType)
         this.health = health
+        this.maxHealth = health
         this.states = []
         this.currentState
     }
 }
 
 class Boss extends Enemy {
-    constructor(position = new Vector(), hitboxType = HitBoxType.GREEN62, health = 1000) {
+    constructor(position = new Vector(), hitboxType = HitBoxType.GREEN62, health = 2000) {
         super(position, hitboxType, health)
         this.states.push(new BossStateZero(this))
         this.states.push(new TransitionState(this, 2, new Vector(400 - 31, 30), 300))
@@ -186,27 +223,24 @@ class Boss extends Enemy {
     update() {
         this.currentState.update()
     }
+    redraw(context = enemyContext) {
+        super.redraw(context)
+        context.fillStyle = "#FFFF00"
+        context.fillRect(100, 10, (WIDTH - 2 * 100) * this.health / this.maxHealth, 10)
+        context.beginPath()
+        context.rect(100, 10, (WIDTH - 2 * 100) * this.health / this.maxHealth, 10)
+        context.stroke()
+    }
 }
 
 class HitBox {
-    constructor(imagesrc = BULLETPNG, objectPosition = new Vector(),  imageDimensions = new Vector(), radius = 0) {
+    constructor(imagesrc = BULLETPNG, objectPosition = new Vector(),  imageDimensions = new Vector(), radius = 0, vertices = null) {
         this.src = imagesrc
         this.x = objectPosition.x
         this.y = objectPosition.y
         this.width = imageDimensions.x
         this.height = imageDimensions.y
         this.radius = radius
+        this.vertices = vertices
     }
-}
-
-const HitBoxType = {
-    BLUE12:     0,
-    BLUE16:     1,
-    RED22:      22,
-    PURPLE22:   23,
-    BLUE22:     24,
-    CYAN22:     25,
-    GREEN22:    26,
-    YELLOW22:   27,
-    GREEN62:    62,
 }
