@@ -12,17 +12,20 @@ class NormalGameState extends GameState {
         super()
     }
     update() {
+        playerContext.clearRect(0, 0, playerCanvas.width, playerCanvas.height)
+        enemyContext.clearRect(0, 0, enemyCanvas.width, enemyCanvas.height)
+        playerBulletContext.clearRect(0, 0, playerBulletCanvas.width, playerBulletCanvas.height)
+        enemyBulletContext.clearRect(0, 0, enemyBulletCanvas.width, enemyBulletCanvas.height)
         player.update()
-        player.redraw()
+        player.redraw(playerContext)
         enemy.update()
-        enemy.redraw()
+        enemy.redraw(enemyContext)
 
         // move enemyBullets
         for (let i = enemyBullets.length - 1; i >= 0; i--) {
             enemyBullets[i].update()
             enemyBullets[i].redraw()
             if (!enemyBullets[i].checkBounds()) {
-                enemyBullets[i].remove()
                 enemyBullets.splice(i, 1)
                 continue
             }
@@ -33,12 +36,10 @@ class NormalGameState extends GameState {
             playerBullets[i].update()
             playerBullets[i].redraw()
             if (!playerBullets[i].checkBounds()) {
-                playerBullets[i].remove()
                 playerBullets.splice(i, 1)
                 continue
             }
             if (playerBullets[i].checkCollision()) {
-                playerBullets[i].remove()
                 playerBullets.splice(i, 1)
             }
         }

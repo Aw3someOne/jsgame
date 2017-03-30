@@ -1,9 +1,9 @@
 "use strict"
 
 class GameObject {
-    constructor(position = new Vector()) {
+    constructor(position = new Vector(), hitboxType = HitBoxType.RED22) {
         this.position = position
-        this.hitbox
+        this.hitboxType = hitboxType
     }
     update() {
         throw new Error("GameObject::update not overridden")
@@ -11,27 +11,31 @@ class GameObject {
     checkCollision() {
         throw new Error("GameObject::checkCollision not overridden")
     }
-    setHitBox(hitbox) {
-        this.hitbox = hitbox
-    }
-    addto(element) {
-        element.appendChild(this.hitbox.image)
+    addto() {
+        //element.appendChild(this.hitbox.image)
         this.redraw()
     }
-    remove() {
-        this.hitbox.image.remove()
-        hitboxPool.returnToPool(this.hitbox)
-    }
     getCenter() {
-        return new Vector(this.position.x + (this.hitbox.image.width - 1) / 2, this.position.y - (this.hitbox.image.height - 1) / 2)
+        return new Vector(this.position.x + (hitBoxes[this.hitboxType].width - 1) / 2, this.position.y - (hitBoxes[this.hitboxType].height - 1) / 2)
     }
-    redraw() {
-        this.hitbox.image.style.left = this.position.x + "px"
-        this.hitbox.image.style.top = this.position.y + "px"
+    redraw(context = enemyBulletContext) {
+        context.drawImage(
+            bulletSheet,
+            hitBoxes[this.hitboxType].x,
+            hitBoxes[this.hitboxType].y,
+            hitBoxes[this.hitboxType].width,
+            hitBoxes[this.hitboxType].height,
+            this.position.x,
+            this.position.y,
+            hitBoxes[this.hitboxType].width,
+            hitBoxes[this.hitboxType].height,
+        )
+        //this.hitbox.image.style.left = this.position.x + "px"
+        //this.hitbox.image.style.top = this.position.y + "px"
     }
     checkBounds() {
-        if (this.position.x < 0 || this.position.x > WIDTH - this.hitbox.image.width
-                || this.position.y < 0 || this.position.y > HEIGHT - this.hitbox.image.height) {
+        if (this.position.x < 0 || this.position.x > WIDTH - hitBoxes[this.hitboxType].width
+                || this.position.y < 0 || this.position.y > HEIGHT - hitBoxes[this.hitboxType].height) {
             return false
         }
         return true
@@ -39,8 +43,8 @@ class GameObject {
 }
 
 class Bullet extends GameObject {
-    constructor(position = new Vector(), velocity = new Vector()) {
-        super(position)
+    constructor(position = new Vector(), velocity = new Vector(), hitboxType = HitBoxType.RED22) {
+        super(position, hitboxType)
         this.velocity = velocity
     }
     update() {
@@ -51,16 +55,12 @@ class Bullet extends GameObject {
 }
 
 class PlayerBullet extends Bullet {
-    constructor(position = new Vector(), velocity = new Vector(0, -500)) {
-        super(position, velocity)
-    }
-    addto(element) {
-        super.addto(element)
-        playerBullets.push(this)
+    constructor(position = new Vector(), velocity = new Vector(0, -500), hitboxType = HitBoxType.BLUE12) {
+        super(position, velocity, hitboxType)
     }
     checkCollision() {
         var dist = calculateDistance(this.getCenter(), enemy.getCenter())
-        if (dist < this.hitbox.radius + enemy.hitbox.radius) {
+        if (dist < hitBoxes[this.hitboxType].radius + hitBoxes[enemy.hitboxType].radius) {
             enemy.health--
             console.log("Enemy Health: " + enemy.health)
             return true
@@ -70,16 +70,12 @@ class PlayerBullet extends Bullet {
 }
 
 class EnemyBullet extends Bullet {
-    constructor(position = new Vector(), velocity = new Vector()) {
-        super(position, velocity)
-    }
-    addto(element) {
-        super.addto(element)
-        enemyBullets.push(this)
+    constructor(position = new Vector(), velocity = new Vector(), hitboxType = HitBoxType.RED22) {
+        super(position, velocity, hitboxType)
     }
     checkCollision() {
         var dist = calculateDistance(this.getCenter(), player.getCenter())
-        if (dist < this.hitbox.radius + player.hitbox.radius) {
+        if (dist < hitBoxes[this.hitboxType].radius + hitBoxes[player.hitboxType].radius) {
             clearInterval(mainTimer)
             keys = []
         }
@@ -87,8 +83,8 @@ class EnemyBullet extends Bullet {
 }
 
 class Player extends GameObject {
-    constructor(position = new Vector()) {
-        super(position)
+    constructor(position = new Vector(), hitboxType = HitBoxType.BLUE16) {
+        super(position, hitboxType)
         this.normalSpeed = 275
         this.slowSpeed = 125
         this.gunCooldown = 200
@@ -126,9 +122,6 @@ class Player extends GameObject {
         }
         if (keys[b]) {
             if (this.currentBombCooldown <= 0 && this.bombs > 0) {
-                for (let i = 0; i < enemyBullets.length; i++) {
-                    enemyBullets[i].remove()
-                }
                 enemyBullets = []
                 this.currentBombCooldown = this.bombCooldown
                 this.bombs--
@@ -137,8 +130,8 @@ class Player extends GameObject {
         moveVector = moveVector.normalize()
         this.position.x += moveVector.x * speed * deltaSeconds
         this.position.y += moveVector.y * speed * deltaSeconds
-        this.position.x = Math.max(0, Math.min(WIDTH - this.hitbox.image.width, this.position.x))
-        this.position.y = Math.max(0, Math.min(HEIGHT - this.hitbox.image.height, this.position.y))
+        this.position.x = Math.max(0, Math.min(WIDTH - hitBoxes[this.hitboxType].width, this.position.x))
+        this.position.y = Math.max(0, Math.min(HEIGHT - hitBoxes[this.hitboxType].height, this.position.y))
     }
     fireBullet() {
         var innerleftv = this.position.clone()
@@ -148,7 +141,7 @@ class Player extends GameObject {
         var innerleft = new PlayerBullet(innerleftv)
 
         var innerrightv = this.position.clone()
-        innerrightv.x += 12
+        innerrightv.x += 16
         innerrightv.y += 2
         var innerright = new PlayerBullet(innerrightv)
 
@@ -159,17 +152,6 @@ class Player extends GameObject {
         var outerrightv = innerright.position.clone()
         outerrightv.x += 12
         var outerright = new PlayerBullet(outerrightv)
-
-        innerleft.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE12))
-        innerright.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE12))
-        outerleft.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE12))
-        outerright.setHitBox(HitBoxFactory.createHitBox(HitBoxType.BLUE12))
-        /*
-        innerleft.setHitBox(hitboxPool.request(HitBoxType.BLUE12))
-        innerright.setHitBox(hitboxPool.request(HitBoxType.BLUE12))
-        outerleft.setHitBox(hitboxPool.request(HitBoxType.BLUE12))
-        outerright.setHitBox(hitboxPool.request(HitBoxType.BLUE12))
-        */
 
         playerBullets.push(innerleft)
         innerleft.addto(mainDiv)
@@ -186,8 +168,8 @@ class Player extends GameObject {
 }
 
 class Enemy extends GameObject {
-    constructor(position = new Vector(), health = 1) {
-        super(position)
+    constructor(position = new Vector(), hitboxType = HitBoxType.RED22, health = 1) {
+        super(position, hitboxType)
         this.health = health
         this.states = []
         this.currentState
@@ -195,9 +177,10 @@ class Enemy extends GameObject {
 }
 
 class Boss extends Enemy {
-    constructor(position = new Vector(), health = 1000) {
-        super(position, health)
-        this.states[0] = new BossStateZero(this)
+    constructor(position = new Vector(), hitboxType = HitBoxType.GREEN62, health = 1000) {
+        super(position, hitboxType, health)
+        this.states.push(new BossStateZero(this))
+        this.states.push(new BossStateOne(this))
         this.currentState = this.states[0]
     }
     moveTowards(destination, speed) {
@@ -218,15 +201,12 @@ class Boss extends Enemy {
 }
 
 class HitBox {
-    constructor(hitboxType, imagesrc = BULLETPNG, objectPosition = "",  imageDimensions = new Vector(), radius = 0) {
-        this.hitboxType = hitboxType
-        this.image = document.createElement("img")
-        this.image.src = imagesrc
-        this.image.style.position = "absolute"
-        this.image.style.objectFit = "none"
-        this.image.style.objectPosition = objectPosition
-        this.image.width = imageDimensions.x
-        this.image.height = imageDimensions.y
+    constructor(imagesrc = BULLETPNG, objectPosition = new Vector(),  imageDimensions = new Vector(), radius = 0) {
+        this.src = imagesrc
+        this.x = objectPosition.x
+        this.y = objectPosition.y
+        this.width = imageDimensions.x
+        this.height = imageDimensions.y
         this.radius = radius
     }
 }
@@ -241,61 +221,4 @@ const HitBoxType = {
     GREEN22:    26,
     YELLOW22:   27,
     GREEN62:    62,
-}
-
-class HitBoxPool {
-    constructor(poolsize = 500) {
-        this.pool = []
-        this.populatePool(HitBoxType.BLUE12, poolsize) 
-        this.populatePool(HitBoxType.BLUE16, poolsize) 
-        this.populatePool(HitBoxType.RED22, poolsize)
-        this.populatePool(HitBoxType.PURPLE22, poolsize)
-        this.populatePool(HitBoxType.BLUE22, poolsize)
-        this.populatePool(HitBoxType.CYAN22, poolsize)
-        this.populatePool(HitBoxType.GREEN22, poolsize)
-        this.populatePool(HitBoxType.YELLOW22, poolsize)
-        this.populatePool(HitBoxType.GREEN62, poolsize)
-    }
-    populatePool(hitboxType, poolsize) {
-        this.pool[hitboxType] = []
-        while (this.pool[hitboxType].length < poolsize) {
-            this.pool[hitboxType].push(HitBoxFactory.createHitBox(hitboxType))
-        }
-    }
-    request(hitboxType) {
-        if (this.pool[hitboxType].length == 0) {
-            this.populatePool(hitboxType, 15)
-        }
-        return this.pool[hitboxType].pop()
-    }
-    returnToPool(hitbox) {
-        this.pool[hitbox.hitboxType].push(hitbox);
-    }
-}
-
-class HitBoxFactory {
-    constructor() {}
-    static createHitBox(hitboxType = HitBoxType.RED22) {
-        switch (hitboxType) {
-        case HitBoxType.RED22:
-            return new HitBox(HitBoxType.RED22, BULLETPNG, "-38px -253px", new Vector(22, 22), 9)
-        case HitBoxType.BLUE12:
-            return new HitBox(HitBoxType.BLUE12, BULLETPNG, "-99px -137px", new Vector(12, 12), 5)
-        case HitBoxType.BLUE16:
-            return new HitBox(HitBoxType.BLUE16, BULLETPNG, "-97px -68px", new Vector(16, 16), 6.5)
-        case HitBoxType.GREEN62:
-            return new HitBox(HitBoxType.GREEN62, BULLETPNG, "-128px -293px", new Vector(62, 62), 31)
-        case HitBoxType.PURPLE22:
-            return new HitBox(HitBoxType.PURPLE22 ,BULLETPNG, "-70px -253px", new Vector(22, 22), 9)
-        case HitBoxType.BLUE22:
-            return new HitBox(HitBoxType.BLUE22, BULLETPNG, "-102px -253px", new Vector(22, 22), 9)
-        case HitBoxType.CYAN22:
-            return new HitBox(HitBoxType.CYAN22, BULLETPNG, "-134px -253px", new Vector(22, 22), 9)
-        case HitBoxType.GREEN22:
-            return new HitBox(HitBoxType.GREEN22, BULLETPNG, "-166px -253px", new Vector(22, 22), 9)
-        case HitBoxType.YELLOW22:
-            return new HitBox(HitBoxType.YELLOW22, BULLETPNG, "-198px -253px", new Vector(22, 22), 9)
-
-        }
-    }
 }
