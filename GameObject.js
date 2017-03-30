@@ -11,12 +11,8 @@ class GameObject {
     checkCollision() {
         throw new Error("GameObject::checkCollision not overridden")
     }
-    addto() {
-        //element.appendChild(this.hitbox.image)
-        this.redraw()
-    }
     getCenter() {
-        return new Vector(this.position.x + (hitBoxes[this.hitboxType].width - 1) / 2, this.position.y - (hitBoxes[this.hitboxType].height - 1) / 2)
+        return new Vector(Math.round(this.position.x) + (hitBoxes[this.hitboxType].width - 1) / 2, Math.round(this.position.y) - (hitBoxes[this.hitboxType].height - 1) / 2)
     }
     redraw(context = enemyBulletContext) {
         context.drawImage(
@@ -25,17 +21,15 @@ class GameObject {
             hitBoxes[this.hitboxType].y,
             hitBoxes[this.hitboxType].width,
             hitBoxes[this.hitboxType].height,
-            this.position.x,
-            this.position.y,
+            Math.round(this.position.x),
+            Math.round(this.position.y),
             hitBoxes[this.hitboxType].width,
-            hitBoxes[this.hitboxType].height,
+            hitBoxes[this.hitboxType].height
         )
-        //this.hitbox.image.style.left = this.position.x + "px"
-        //this.hitbox.image.style.top = this.position.y + "px"
     }
     checkBounds() {
-        if (this.position.x < 0 || this.position.x > WIDTH - hitBoxes[this.hitboxType].width
-                || this.position.y < 0 || this.position.y > HEIGHT - hitBoxes[this.hitboxType].height) {
+        if (this.position.x < -hitBoxes[this.hitboxType].width || this.position.x > WIDTH
+                || this.position.y < -hitBoxes[this.hitboxType].height || this.position.y > HEIGHT) {
             return false
         }
         return true
@@ -55,7 +49,7 @@ class Bullet extends GameObject {
 }
 
 class PlayerBullet extends Bullet {
-    constructor(position = new Vector(), velocity = new Vector(0, -500), hitboxType = HitBoxType.BLUE12) {
+    constructor(position = new Vector(), velocity = new Vector(0, -1500), hitboxType = HitBoxType.BLUE12) {
         super(position, velocity, hitboxType)
     }
     checkCollision() {
@@ -85,9 +79,9 @@ class EnemyBullet extends Bullet {
 class Player extends GameObject {
     constructor(position = new Vector(), hitboxType = HitBoxType.BLUE16) {
         super(position, hitboxType)
-        this.normalSpeed = 275
+        this.normalSpeed = 425
         this.slowSpeed = 125
-        this.gunCooldown = 200
+        this.gunCooldown = 50
         this.bombCooldown = 1000
         this.currentGunCooldown = 0
         this.currentBombCooldown = 0
@@ -114,7 +108,7 @@ class Player extends GameObject {
             moveVector.x += 1
             // console.log("you're holding down 'd'")
         }
-        if (keys[SPACE] || autofire) {
+        if (keys[c] || autofire) {
             if (this.currentGunCooldown <= 0) {
                 this.fireBullet()
                 this.currentGunCooldown = this.gunCooldown
@@ -154,16 +148,9 @@ class Player extends GameObject {
         var outerright = new PlayerBullet(outerrightv)
 
         playerBullets.push(innerleft)
-        innerleft.addto(mainDiv)
-
         playerBullets.push(innerright)
-        innerright.addto(mainDiv)
-
         playerBullets.push(outerleft)
-        outerleft.addto(mainDiv)
-
         playerBullets.push(outerright)
-        outerright.addto(mainDiv)
     }
 }
 
@@ -180,6 +167,7 @@ class Boss extends Enemy {
     constructor(position = new Vector(), hitboxType = HitBoxType.GREEN62, health = 1000) {
         super(position, hitboxType, health)
         this.states.push(new BossStateZero(this))
+        this.states.push(new TransitionState(this, 2, new Vector(400 - 31, 30), 300))
         this.states.push(new BossStateOne(this))
         this.currentState = this.states[0]
     }

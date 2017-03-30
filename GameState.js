@@ -16,6 +16,7 @@ class NormalGameState extends GameState {
         enemyContext.clearRect(0, 0, enemyCanvas.width, enemyCanvas.height)
         playerBulletContext.clearRect(0, 0, playerBulletCanvas.width, playerBulletCanvas.height)
         enemyBulletContext.clearRect(0, 0, enemyBulletCanvas.width, enemyBulletCanvas.height)
+
         player.update()
         player.redraw(playerContext)
         enemy.update()

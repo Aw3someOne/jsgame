@@ -2,7 +2,7 @@
 
 const BULLETPNG = "img/bullets.png"
 
-const DELAY = 16 
+const DELAY = 1
 const WIDTH = 800
 const HEIGHT = 1000
 
@@ -37,7 +37,7 @@ var deltaTime
 var deltaSeconds
 var timeOfLastUpdate
 var keys = []
-var autofire = true
+var autofire = false
 var playerBullets = []
 var enemyBullets = []
 
@@ -71,7 +71,6 @@ hitBoxes[HitBoxType.GREEN62] =
         new HitBox(bulletSheet, new Vector(128, 293), new Vector(62, 62), 31)
 
 onload = function() {
-    console.log(bulletSheet)
     mainDiv = document.createElement("div")
     mainDiv.id = "main"
     mainDiv.style.minWidth = WIDTH
@@ -138,7 +137,7 @@ function sleep(ms) {
 
 onkeydown = function(e) {
     keys[e.keyCode] = true
-    if (e.keyCode == c) {
+    if (e.keyCode == SPACE) {
         autofire = !autofire
     }
 }
