@@ -22,12 +22,25 @@ class NormalGameState extends GameState {
         enemy.update()
         enemy.redraw(enemyContext)
 
+/*
         // move enemyBullets
         for (let i = enemyBullets.length - 1; i >= 0; i--) {
             enemyBullets[i].update()
             enemyBullets[i].redraw()
             if (!enemyBullets[i].checkBounds()) {
                 enemyBullets.splice(i, 1)
+                continue
+            }
+            enemyBullets[i].checkCollision()
+        }
+*/
+
+
+        for (let i = 0; i < enemyBullets.length; i++) {
+            enemyBullets[i].update()
+            enemyBullets[i].redraw()
+            if (!enemyBullets[i].checkBounds()) {
+                enemyBullets.splice(i--, 1)
                 continue
             }
             enemyBullets[i].checkCollision()

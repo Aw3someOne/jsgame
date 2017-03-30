@@ -51,6 +51,15 @@ var mainTimer
 
 var hitBoxes = []
 
+var v12x12 = [ new Vector(1, 4),
+            new Vector(4, 1),
+            new Vector(7, 1),
+            new Vector(10, 4),
+            new Vector(10, 7),
+            new Vector(7, 10),
+            new Vector(4, 10),
+            new Vector(1, 7), ]
+
 var v16x16 = [ new Vector(3, 6),
             new Vector(6, 3),
             new Vector(9, 3),
@@ -98,7 +107,7 @@ const HitBoxType = {
 }
 
 hitBoxes[HitBoxType.BLUE12] =
-        new HitBox(bulletSheet, new Vector(99, 137), new Vector(12, 12), 6.5, v22x22)
+        new HitBox(bulletSheet, new Vector(99, 137), new Vector(12, 12), 6.5, v12x12)
 hitBoxes[HitBoxType.BLUE16] = 
         new HitBox(bulletSheet, new Vector(97, 68), new Vector(16, 16), 6.5, v16x16)
 hitBoxes[HitBoxType.RED22] =
@@ -168,6 +177,8 @@ onload = function() {
     enemy.position = new Vector((WIDTH - hitBoxes[enemy.hitboxType].width) / 2, 50)
     enemy.redraw(enemyContext)
 
+    var bgm = new Audio("bgm/alien.mp3")
+    //bgm.play()
     mainTimer = setInterval(mainLoop, 1)
 }
 

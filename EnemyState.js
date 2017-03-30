@@ -45,11 +45,11 @@ class SpiralPattern extends Pattern {
     update() {
         this.currentCooldown -= deltaTime
         if (this.currentCooldown <= 0) {
+            this.i %= this.count
             var bullet = new EnemyBullet(new Vector(this.enemy.position.x + (hitBoxes[this.enemy.hitboxType].width - hitBoxes[this.hitboxType].width) / 2,
                 this.enemy.position.y + (hitBoxes[this.enemy.hitboxType].height - hitBoxes[this.hitboxType].height) / 2), this.vectors[this.i], this.hitboxType)
             enemyBullets.push(bullet)
             this.currentCooldown += (++this.i == this.count ? this.cooldown: this.delay)
-            this.i %= this.count
         }
     }
 }
@@ -81,10 +81,10 @@ class FlowerPattern extends Pattern {
 }
 
 class MultiFlowerPattern extends FlowerPattern {
-    constructor(enemy, cooldown = 500, initialCooldown = 0, hitboxTypes, count = 16, speed = 200, rot, delay = 200, alternate = true) {
-        super(enemy, cooldown, initialCooldown, hitboxTypes[0], count, speed, rot)
+    constructor(enemy, cooldown = 500, initialCooldown = 0, hitboxTypes, count = 16, speeds = [200], rot, delay = 200, alternate = true, offset = Math.PI / 64) {
+        super(enemy, cooldown, initialCooldown, hitboxTypes[0], count, speeds[0], rot)
         this.allvectors = []
-        this.speed = speed
+        this.speeds = speeds
         this.hitboxTypes = hitboxTypes
         this.rot = rot
         this.step = 2 * Math.PI / count
@@ -92,38 +92,20 @@ class MultiFlowerPattern extends FlowerPattern {
         this.delay = delay
         this.alternate = true
         this.direction = 1
+        this.offset = offset
     }
     update() {
         this.currentCooldown -= deltaTime
         if (this.currentCooldown <= 0) {
+            this.i %= this.hitboxTypes.length
+            this.speed = this.speeds[this.i]
             this.hitboxType = this.hitboxTypes[this.i]
-            this.flower(this.enemy.position, this.rot + this.i * this.direction * Math.PI / 64)
+            this.flower(this.enemy.position, this.rot + this.i * this.direction * this.offset)
             ++this.i
             this.currentCooldown += (this.i == this.hitboxTypes.length ? this.cooldown: this.delay)
             if (this.i == this.hitboxTypes.length && this.alternate) {
                 this.direction *= -1
             }
-            this.i %= this.hitboxTypes.length
-        }
-    }
-}
-
-class TripleFlowerPattern extends FlowerPattern {
-    constructor(enemy, cooldown = 500, initialCooldown = 0, hitboxType = HitBoxType.RED22, count = 16, speed = 200, rot = Math.PI / 2, delay = 200) {
-        super(enemy, cooldown, initialCooldown, hitboxType, count, speed, rot)
-        this.i = 0
-        this.position
-        this.delay = delay
-    }
-    update() {
-        this.currentCooldown -= deltaTime
-        if (this.currentCooldown <= 0) {
-            if (this.i == 0) {
-                this.position = this.enemy.position.clone()
-            }
-            this.flower(this.position)
-            this.currentCooldown += (++this.i == 3 ? this.cooldown: this.delay)
-            this.i %= 3
         }
     }
 }
@@ -139,22 +121,22 @@ class TransitionState extends EnemyState {
         if (this.enemy.moveTowards(this.point, this.speed)) {
             this.enemy.currentState = this.enemy.states[this.nextState]
             this.enemy.health = this.enemy.maxHealth
+            this.enemy.statesRemaining--
         }
     }
 }
 
-
-class BossStateZero extends EnemyState {
+class BossMultiFlowerState extends EnemyState {
     constructor(enemy) {
         super(enemy)
         this.points = []
-        this.points.push(new Vector(700 - 31, 100))
-        this.points.push(new Vector(400 - 31, 170))
-        this.points.push(new Vector(100 - 31, 100))
-        this.points.push(new Vector(400 - 31, 30))
+        this.points.push(new Vector(700 - 31, 200))
+        this.points.push(new Vector(400 - 31, 350))
+        this.points.push(new Vector(100 - 31, 200))
+        this.points.push(new Vector(400 - 31, 50))
         this.currentdest = 0
-        this.hitboxTypes = []
         this.shooting = true
+        this.hitboxTypes = []
         this.hitboxTypes.push(HitBoxType.CYAN22)
         this.hitboxTypes.push(HitBoxType.GREEN22)
         this.hitboxTypes.push(HitBoxType.YELLOW22)
@@ -165,14 +147,12 @@ class BossStateZero extends EnemyState {
         this.hitboxTypes.push(HitBoxType.YELLOW22)
         this.hitboxTypes.push(HitBoxType.RED22)
         this.hitboxTypes.push(HitBoxType.PURPLE22)
-        /*
-        this.hitboxTypes.push(HitBoxType.CYAN22)
-        this.hitboxTypes.push(HitBoxType.GREEN22)
-        this.hitboxTypes.push(HitBoxType.YELLOW22)
-        this.hitboxTypes.push(HitBoxType.RED22)
-        this.hitboxTypes.push(HitBoxType.PURPLE22)
-        */
-        this.patterns.push(new MultiFlowerPattern(enemy, 1000, 0, this.hitboxTypes, 32, 75, Math.PI / 2,400))
+        this.speeds = []
+        for (let i = 0; i < this.hitboxTypes.length; i++) {
+            this.speeds[i] = 75 - 5 * i
+        }
+        //this.patterns.push(new MultiFlowerPattern(enemy, 1000, 0, this.hitboxTypes, 16, this.speeds, Math.PI / 2, 150, true,  Math.PI / 64))
+        this.patterns.push(new MultiFlowerPattern(enemy, 1000, 0, this.hitboxTypes, 16, this.speeds, Math.PI / 2, 150, true,  9000))
     }
     update() {
         if (this.enemy.health <= 0) {
@@ -187,11 +167,47 @@ class BossStateZero extends EnemyState {
                 this.patterns[i].update()
             }
         }
-        if (this.patterns[0].i + 1 == this.hitboxTypes.length) {
+        if (this.patterns[0].i  == this.hitboxTypes.length) {
             this.shooting = false
-            if (enemy.moveTowards(this.points[this.currentdest], 150)) {
+            if (this.enemy.moveTowards(this.points[this.currentdest], 150)) {
                 this.shooting = true
                 this.patterns[0].currentCooldown = 0
+                this.currentdest = ++this.currentdest % this.points.length
+            }
+        }
+    }
+}
+
+class BossSpiralState extends EnemyState {
+    constructor(enemy) {
+        super(enemy)
+        this.points = []
+        this.points.push(new Vector(700 - 31, 100))
+        this.points.push(new Vector(400 - 31, 400))
+        this.points.push(new Vector(100 - 31, 100))
+        this.points.push(new Vector(400 - 31, 30))
+        this.currentdest = 0
+        this.shooting = true
+        this.patterns = []
+        this.patterns.push(new SpiralPattern(enemy, 1000, 0, HitBoxType.PURPLE22, 120, 100, Math.PI / 2, Math.PI / 40, 15))
+        this.patterns.push(new SpiralPattern(enemy, 1000, 0, HitBoxType.YELLOW22, 120, 100, -Math.PI / 2, Math.PI / 40, 15))
+    }
+    update() {
+        if (this.enemy.health <= 0) {
+            throw new Error("not implemented")
+        }
+        this.currentWait -= deltaTime
+        if (this.shooting) {
+            for (let i = 0; i < this.patterns.length; i++) {
+                this.patterns[i].update()
+            }
+        }
+        if (this.patterns[0].i == this.patterns[0].count) {
+            this.shooting = false
+            if (this.enemy.moveTowards(this.points[this.currentdest], 400)) {
+                this.shooting = true
+                this.patterns[0].currentCooldown = 0
+                this.patterns[1].currentCooldown = 0
                 this.currentdest = ++this.currentdest % this.points.length
             }
         }
@@ -202,22 +218,25 @@ class BossStateOne extends EnemyState {
     constructor(enemy) {
         super(enemy)
         this.points = []
+        this.points.push(new Vector(400 - 31, 30))
         this.points.push(new Vector(700 - 31, 100))
         this.points.push(new Vector(400 - 31, 170))
         this.points.push(new Vector(100 - 31, 100))
-        this.points.push(new Vector(400 - 31, 30))
-        this.patterns.push(new TripleFlowerPattern(enemy, 1500, 1000, HitBoxType.GREEN22, 16, 300, Math.PI / 2))
-        this.patterns.push(new FlowerPattern(enemy, 500, 1000, HitBoxType.RED22, 16, 300, Math.PI / 2))
-        this.patterns.push(new FlowerPattern(enemy, 500, 1000, HitBoxType.RED22, 16, 500, Math.PI / 2))
-        this.patterns.push(new FlowerPattern(enemy, 500, 1000, HitBoxType.RED22, 16, 700, Math.PI / 2))
-        this.currentdest = 0
+        this.shooting = true
+        this.hitboxTypes = []
+        this.hitboxTypes.push(HitBoxType.RED22)
+        this.hitboxTypes.push(HitBoxType.RED22)
+        this.hitboxTypes.push(HitBoxType.RED22)
     }
     update() {
-        for (let i = 0; i < this.patterns.length; i++) {
-            this.patterns[i].update()
+        if (this.shooting) {
+            for (let i = 0; i < this.patterns.length; i++) {
+                this.patterns[i].update()
+            }
         }
         if (enemy.moveTowards(this.points[this.currentdest], 150)) {
             this.currentdest = ++this.currentdest % this.points.length
+            this.shooting = true
         }
     }
 }

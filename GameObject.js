@@ -82,7 +82,6 @@ class PlayerBullet extends Bullet {
         var dist = calculateDistance(this.getCenter(), enemy.getCenter())
         if (dist < hitBoxes[this.hitboxType].radius + hitBoxes[enemy.hitboxType].radius) {
             enemy.health--
-            console.log("Enemy Health: " + enemy.health)
             return true
         }
         return false
@@ -112,7 +111,7 @@ class EnemyBullet extends Bullet {
 }
 
 class Player extends GameObject {
-    constructor(position = new Vector(), hitboxType = HitBoxType.BLUE16) {
+    constructor(position = new Vector(), hitboxType = HitBoxType.BLUE12) {
         super(position, hitboxType)
         this.bulletHitBoxType = HitBoxType.REDKUNAI
         this.normalSpeed = 425
@@ -201,12 +200,13 @@ class Enemy extends GameObject {
 }
 
 class Boss extends Enemy {
-    constructor(position = new Vector(), hitboxType = HitBoxType.GREEN62, health = 2000) {
+    constructor(position = new Vector(), hitboxType = HitBoxType.GREEN62, health = 500) {
         super(position, hitboxType, health)
-        this.states.push(new BossStateZero(this))
+        this.states.push(new BossMultiFlowerState(this))
         this.states.push(new TransitionState(this, 2, new Vector(400 - 31, 30), 300))
-        this.states.push(new BossStateOne(this))
+        this.states.push(new BossSpiralState(this))
         this.currentState = this.states[0]
+        this.statesRemaining = 1
     }
     moveTowards(destination, speed) {
         if (calculateDistance(destination, this.position) <= speed * deltaSeconds) {
@@ -225,11 +225,15 @@ class Boss extends Enemy {
     }
     redraw(context = enemyContext) {
         super.redraw(context)
-        context.fillStyle = "#FFFF00"
-        context.fillRect(100, 10, (WIDTH - 2 * 100) * this.health / this.maxHealth, 10)
-        context.beginPath()
-        context.rect(100, 10, (WIDTH - 2 * 100) * this.health / this.maxHealth, 10)
-        context.stroke()
+        if (this.health > 0) {
+            context.fillStyle = "#FFFF00"
+            context.fillRect(100, 10, (WIDTH - 2 * 100) * this.health / this.maxHealth, 10)
+            context.beginPath()
+            context.rect(100, 10, (WIDTH - 2 * 100) * this.health / this.maxHealth, 10)
+            context.font = "30px Arial"
+            context.fillText(this.statesRemaining, 50, 30)
+            context.stroke()
+        }
     }
 }
 
