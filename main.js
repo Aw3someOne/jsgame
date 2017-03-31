@@ -178,7 +178,7 @@ onload = function() {
     enemy.redraw(enemyContext)
 
     var bgm = new Audio("bgm/alien.mp3")
-    //bgm.play()
+    bgm.play()
     mainTimer = setInterval(mainLoop, 1)
 }
 

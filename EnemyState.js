@@ -178,6 +178,16 @@ class BossMultiFlowerState extends EnemyState {
     }
 }
 
+class BossCurtainState extends EnemyState {
+    constructor(enemy) {
+        super(enemy)
+        this.points = []
+        this.currestdest = 0
+        this.shooting = true
+        this.hitboxTypes.push(HitBoxType.RED22)
+    }
+}
+
 class BossSpiralState extends EnemyState {
     constructor(enemy) {
         super(enemy)
