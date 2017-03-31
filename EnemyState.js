@@ -27,7 +27,7 @@ class EnemyState {
 }
 
 class SpiralPattern extends Pattern {
-    constructor(enemy, cooldown = 1000, initialCooldown = 0, hitboxType = HitBoxType.RED22, count = 16, speed = 200, rot = Math.PI / 2, stepAngle = Math.PI / 12, delay = 25) {
+    constructor(enemy, cooldown = 1000, initialCooldown = 0, hitboxType = HitBoxType.RED22, count = 16, speed = 200, rot = Math.PI / 2, stepAngle = Math.PI / 12, delay = 25, alternate = true) {
         super(enemy, cooldown, initialCooldown, hitboxType)
         this.vectors = []
         this.count = count
@@ -37,19 +37,22 @@ class SpiralPattern extends Pattern {
         this.index = 0
         this.delay = delay
         this.i = 0
-        for (let i = 0; i < count; i++) {
-            var angle = this.step * i + rot
-            this.vectors[i] = new Vector(speed * Math.cos(angle), speed * Math.sin(angle))
-        }
+        this.alternate = alternate
+        this.direction = 1
     }
     update() {
         this.currentCooldown -= deltaTime
         if (this.currentCooldown <= 0) {
             this.i %= this.count
+            var angle = this.direction * this.step * this.i + this.rot
+            var v = new Vector(this.speed * Math.cos(angle), this.speed * Math.sin(angle))
             var bullet = new EnemyBullet(new Vector(this.enemy.position.x + (hitBoxes[this.enemy.hitboxType].width - hitBoxes[this.hitboxType].width) / 2,
-                this.enemy.position.y + (hitBoxes[this.enemy.hitboxType].height - hitBoxes[this.hitboxType].height) / 2), this.vectors[this.i], this.hitboxType)
+                this.enemy.position.y + (hitBoxes[this.enemy.hitboxType].height - hitBoxes[this.hitboxType].height) / 2), v, this.hitboxType)
             enemyBullets.push(bullet)
             this.currentCooldown += (++this.i == this.count ? this.cooldown: this.delay)
+            if (this.i == this.count && this.alternate) {
+                this.direction *= -1
+            }
         }
     }
 }
@@ -90,7 +93,7 @@ class MultiFlowerPattern extends FlowerPattern {
         this.step = 2 * Math.PI / count
         this.i = 0
         this.delay = delay
-        this.alternate = true
+        this.alternate = alternate
         this.direction = 1
         this.offset = offset
     }
