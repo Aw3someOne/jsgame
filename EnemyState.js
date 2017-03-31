@@ -118,9 +118,9 @@ class TransitionState extends EnemyState {
         this.speed = speed
     }
     update() {
-        if (this.enemy.moveTowards(this.point, this.speed)) {
+        this.enemy.health = Math.min(this.enemy.maxHealth, this.enemy.health + deltaTime)
+        if (this.enemy.moveTowards(this.point, this.speed) && this.enemy.health >= this.enemy.maxHealth) {
             this.enemy.currentState = this.enemy.states[this.nextState]
-            this.enemy.health = this.enemy.maxHealth
             this.enemy.statesRemaining--
         }
     }
@@ -156,6 +156,8 @@ class BossMultiFlowerState extends EnemyState {
     }
     update() {
         if (this.enemy.health <= 0) {
+            var sfx = new Audio(SPELLCARD)
+            sfx.play()
             this.enemy.currentState = this.enemy.states[1]
             console.log("moving to next stage")
             enemyBullets = []
@@ -182,6 +184,8 @@ class BossCurtainState extends EnemyState {
     constructor(enemy) {
         super(enemy)
         this.points = []
+        this.points.push(new Vector(100 - 31, 100))
+        this.points.push(new Vector(700 - 31, 100))
         this.currestdest = 0
         this.shooting = true
         this.hitboxTypes.push(HitBoxType.RED22)
@@ -204,6 +208,8 @@ class BossSpiralState extends EnemyState {
     }
     update() {
         if (this.enemy.health <= 0) {
+            var sfx = new Audio(SPELLCARD)
+            sfx.play()
             throw new Error("not implemented")
         }
         this.currentWait -= deltaTime

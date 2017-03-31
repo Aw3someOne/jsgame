@@ -121,6 +121,12 @@ class Player extends GameObject {
         this.currentGunCooldown = 0
         this.currentBombCooldown = 0
         this.bombs = 3
+        this.currentSprite = 0
+    }
+    redraw(context = playerContext) {
+        graphicsContext.drawImage(shipSheet, this.currentSprite++ * 64, 0, 64, 68, this.position.x - 32 + 6, this.position.y - 34 + 6, 64, 68)
+        this.currentSprite %= shipCount
+        super.redraw(context)
     }
     update() {
         this.currentGunCooldown -= deltaTime
@@ -151,6 +157,8 @@ class Player extends GameObject {
         }
         if (keys[b]) {
             if (this.currentBombCooldown <= 0 && this.bombs > 0) {
+                var sfx = new Audio(SPELLCARD)
+                sfx.play()
                 enemyBullets = []
                 this.currentBombCooldown = this.bombCooldown
                 this.bombs--
@@ -163,23 +171,27 @@ class Player extends GameObject {
         this.position.y = Math.max(0, Math.min(HEIGHT - hitBoxes[this.hitboxType].height, this.position.y))
     }
     fireBullet() {
+        var sfx = laserPool.request()
+        sfx.play()
         var innerleftv = this.position.clone()
         innerleftv.x -= hitBoxes[this.bulletHitBoxType].width
-        innerleftv.y += 2
+        innerleftv.y -= 12
 
         var innerleft = new PlayerBullet(innerleftv, new Vector(0, -1500), this.bulletHitBoxType)
 
         var innerrightv = this.position.clone()
         innerrightv.x += hitBoxes[this.hitboxType].width
-        innerrightv.y += 2
+        innerrightv.y -= 12
         var innerright = new PlayerBullet(innerrightv, new Vector(0, -1500), this.bulletHitBoxType)
 
         var outerleftv = innerleft.position.clone()
         outerleftv.x -= hitBoxes[this.bulletHitBoxType].width
+        outerleftv.y += 14
         var outerleft = new PlayerBullet(outerleftv, new Vector(0, -1500), this.bulletHitBoxType)
 
         var outerrightv = innerright.position.clone()
         outerrightv.x += hitBoxes[this.bulletHitBoxType].width
+        outerrightv.y += 14
         var outerright = new PlayerBullet(outerrightv, new Vector(0, -1500), this.bulletHitBoxType)
 
         playerBullets.push(innerleft)

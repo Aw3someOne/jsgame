@@ -47,6 +47,26 @@ function calculateDistance(v1, v2) {
 }
 
 function collisionTest(lhs, rhs) {
+    var lhshb = hitBoxes[lhs.hitboxType]
+    var rhshb = hitBoxes[rhs.hitboxType]
+    
+    var lhsleft = lhs.position.x
+    var lhstop = lhs.position.y
+    var lhsright = lhs.left + lhshb.width - 1
+    var lhsbottom = lhstop + lhshb.height - 1
+
+    var rhsleft = rhs.position.x
+    var rhstop = rhs.position.y
+    var rhsright = rhs.left + rhshb.width - 1
+    var rhsbottom = rhstop + rhshb.height - 1
+
+    if (rhsleft > lhsright
+            || rhsright < lhsleft
+            || rhstop > lhsbottom
+            || rhsbottom < lhstop) {
+        return false
+    }
+
     var lhsVertices = lhs.getVertices()
     var rhsVertices = rhs.getVertices()
     var lhsAxes = getAxes(lhsVertices)

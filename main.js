@@ -1,11 +1,16 @@
 "use strict"
 
+const SHIPPNG = "img/ship.png"
 const BULLETPNG = "img/bullets.png"
+const LASER = "sfx/laser2.wav"
+const COREHIT = "sfx/corehit.wav"
+const SPELLCARD = "sfx/SPELLCARD.wav"
 
 const DELAY = 1
 const WIDTH = 800
 const HEIGHT = 1000
 
+const ENTER = 13
 const SHIFT = 16
 const SPACE = 32
 const LEFT = 37
@@ -22,6 +27,8 @@ const s = 83
 const d = 68
 
 var mainDiv
+var graphicsCanvas
+var graphicsContext
 var playerCanvas
 var playerContext
 var enemyCanvas
@@ -31,6 +38,8 @@ var playerBulletContext
 var enemyBulletCanvas
 var enemyBulletContext
 
+var titleScreenGameState
+var bossInitializationState
 var normalGameState
 var currentGameState
 var deltaTime
@@ -44,8 +53,16 @@ var enemyBullets = []
 var player
 var enemy
 
+var shipSheet = new Image(256, 68)
+shipSheet.src = SHIPPNG
+var shipCount = 4
 var bulletSheet = new Image(257, 355)
 bulletSheet.src = BULLETPNG
+
+var bgm = new Audio("bgm/alien.mp3")
+
+var laserPool = new AudioPool(LASER, 50)
+var corehitPool = new AudioPool(COREHIT, 50)
 
 var mainTimer
 
@@ -139,6 +156,11 @@ onload = function() {
     mainDiv.style.backgroundColor = "CCC"
     document.body.appendChild(mainDiv)
 
+    graphicsCanvas = document.createElement("canvas")
+    graphicsCanvas.width = WIDTH
+    graphicsCanvas.height = HEIGHT
+    graphicsContext = graphicsCanvas.getContext("2d")
+
     playerCanvas = document.createElement("canvas")
     playerCanvas.width = WIDTH
     playerCanvas.height = HEIGHT
@@ -159,27 +181,31 @@ onload = function() {
     enemyBulletCanvas.height = HEIGHT
     enemyBulletContext = enemyBulletCanvas.getContext("2d")
 
+    mainDiv.appendChild(graphicsCanvas)
     mainDiv.appendChild(enemyBulletCanvas)
     mainDiv.appendChild(playerBulletCanvas)
 
     mainDiv.appendChild(playerCanvas)
     mainDiv.appendChild(enemyCanvas)
+    titleScreenGameState = new TitleScreenGameState()
+    bossInitializationState = new BossInitializationState()
     normalGameState = new NormalGameState()
-    currentGameState = normalGameState
+    currentGameState = titleScreenGameState
     timeOfLastUpdate = Date.now()
 
     player = new Player()
 
     player.position = new Vector((WIDTH - hitBoxes[player.hitboxType].width) / 2, HEIGHT - 50)
-    player.redraw(playerContext)
 
     enemy = new Boss()
     enemy.position = new Vector((WIDTH - hitBoxes[enemy.hitboxType].width) / 2, 50)
-    enemy.redraw(enemyContext)
-
-    var bgm = new Audio("bgm/alien.mp3")
-    bgm.play()
     mainTimer = setInterval(mainLoop, 1)
+}
+
+function gameStart() {
+            //player.redraw(playerContext)
+            //enemy.redraw(enemyContext)
+    bgm.play()
 }
 
 function mainLoop() {
