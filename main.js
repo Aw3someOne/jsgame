@@ -2,9 +2,10 @@
 
 const SHIPPNG = "img/ship.png"
 const BULLETPNG = "img/bullets.png"
-const LASER = "sfx/laser2.wav"
-const COREHIT = "sfx/corehit.wav"
-const SPELLCARD = "sfx/SPELLCARD.wav"
+const LASER = "sfx/Laser2.wav"
+const COREHIT = "sfx/CoreHit3.wav"
+const SPELLCARD = "sfx/053.wav" // better than SPELLCARD.wav
+const PLAYERDEATH = "sfx/DEAD.wav" // or 071
 
 const DELAY = 1
 const WIDTH = 800
@@ -37,6 +38,8 @@ var playerBulletCanvas
 var playerBulletContext
 var enemyBulletCanvas
 var enemyBulletContext
+var uiCanvas
+var uiContext
 
 var titleScreenGameState
 var bossInitializationState
@@ -68,14 +71,14 @@ var mainTimer
 
 var hitBoxes = []
 
-var v12x12 = [ new Vector(1, 4),
-            new Vector(4, 1),
-            new Vector(7, 1),
-            new Vector(10, 4),
-            new Vector(10, 7),
-            new Vector(7, 10),
-            new Vector(4, 10),
-            new Vector(1, 7), ]
+var v12x12 = [ new Vector(2, 4),
+            new Vector(4, 2),
+            new Vector(7, 2),
+            new Vector(9, 4),
+            new Vector(9, 7),
+            new Vector(7, 9),
+            new Vector(4, 9),
+            new Vector(2, 7), ]
 
 var v16x16 = [ new Vector(3, 6),
             new Vector(6, 3),
@@ -181,12 +184,18 @@ onload = function() {
     enemyBulletCanvas.height = HEIGHT
     enemyBulletContext = enemyBulletCanvas.getContext("2d")
 
+    uiCanvas = document.createElement("canvas")
+    uiCanvas.width = WIDTH
+    uiCanvas.height = HEIGHT
+    uiContext = uiCanvas.getContext("2d")
+
     mainDiv.appendChild(graphicsCanvas)
     mainDiv.appendChild(enemyBulletCanvas)
     mainDiv.appendChild(playerBulletCanvas)
-
     mainDiv.appendChild(playerCanvas)
     mainDiv.appendChild(enemyCanvas)
+    mainDiv.appendChild(uiCanvas)
+
     titleScreenGameState = new TitleScreenGameState()
     bossInitializationState = new BossInitializationState()
     normalGameState = new NormalGameState()

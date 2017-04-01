@@ -96,10 +96,7 @@ class EnemyBullet extends Bullet {
         super(position, velocity, hitboxType, rotation)
     }
     checkCollision() {
-        if (collisionTest(this, player)) {
-            clearInterval(mainTimer)
-            keys = []
-        }
+        return (collisionTest(this, player))
         /*
         var dist = calculateDistance(this.getCenter(), player.getCenter())
         if (dist < hitBoxes[this.hitboxType].radius + hitBoxes[player.hitboxType].radius) {
@@ -238,13 +235,13 @@ class Boss extends Enemy {
     redraw(context = enemyContext) {
         super.redraw(context)
         if (this.health > 0) {
-            context.fillStyle = "#FFFF00"
-            context.fillRect(100, 10, (WIDTH - 2 * 100) * this.health / this.maxHealth, 10)
-            context.beginPath()
-            context.rect(100, 10, (WIDTH - 2 * 100) * this.health / this.maxHealth, 10)
-            context.font = "30px Arial"
-            context.fillText(this.statesRemaining, 50, 30)
-            context.stroke()
+            uiContext.fillStyle = "#FFFF00"
+            uiContext.fillRect(100, 10, (WIDTH - 2 * 100) * this.health / this.maxHealth, 10)
+            uiContext.beginPath()
+            uiContext.rect(100, 10, (WIDTH - 2 * 100) * this.health / this.maxHealth, 10)
+            uiContext.font = "30px Arial"
+            uiContext.fillText(this.statesRemaining, 50, 30)
+            uiContext.stroke()
         }
     }
 }

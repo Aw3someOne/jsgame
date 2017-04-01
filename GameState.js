@@ -12,20 +12,20 @@ class TitleScreenGameState extends GameState {
         super()
     }
     update() {
-        graphicsContext.clearRect(0, 0, playerCanvas.width, playerCanvas.height)
+        uiContext.clearRect(0, 0, playerCanvas.width, playerCanvas.height)
         if (keys[ENTER]) {
             bgm.play()
             enemy.health = 0
             currentGameState = bossInitializationState
             return
         }
-        graphicsContext.beginPath()
-        graphicsContext.font = "30px Arial"
-        graphicsContext.textAlign = "center"
-        graphicsContext.fillText("Welcome to Bullet Hell", graphicsCanvas.width / 2, 100)
-        graphicsContext.fillText("Press Enter", graphicsCanvas.width / 2, 700)
+        uiContext.beginPath()
+        uiContext.font = "30px Arial"
+        uiContext.textAlign = "center"
+        uiContext.fillText("Welcome to Bullet Hell", graphicsCanvas.width / 2, 100)
+        uiContext.fillText("Press Enter", graphicsCanvas.width / 2, 700)
 
-        graphicsContext.stroke()
+        uiContext.stroke()
     }
 }
 
@@ -55,6 +55,7 @@ class NormalGameState extends GameState {
         enemyContext.clearRect(0, 0, enemyCanvas.width, enemyCanvas.height)
         playerBulletContext.clearRect(0, 0, playerBulletCanvas.width, playerBulletCanvas.height)
         enemyBulletContext.clearRect(0, 0, enemyBulletCanvas.width, enemyBulletCanvas.height)
+        uiContext.clearRect(0, 0, enemyBulletCanvas.width, enemyBulletCanvas.height)
 
         player.update()
         player.redraw(playerContext)
@@ -82,7 +83,18 @@ class NormalGameState extends GameState {
                 enemyBullets.splice(i--, 1)
                 continue
             }
-            enemyBullets[i].checkCollision()
+            if (enemyBullets[i].checkCollision()) {
+                var sfx = new Audio(PLAYERDEATH)
+                sfx.play()
+                uiContext.beginPath()
+                uiContext.font = "30px Arial"
+                uiContext.textAlign = "center"
+                uiContext.fillStyle = "#000000"
+                uiContext.fillText("You died", uiCanvas.width / 2, 200)
+                uiContext.stroke()
+                clearInterval(mainTimer)
+                keys = []
+            }
         }
 
         for (let i = playerBullets.length - 1; i >= 0; i--) {
