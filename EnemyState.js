@@ -6,7 +6,6 @@ class Pattern {
         this.cooldown = cooldown
         this.currentCooldown = initialCooldown
         this.hitboxType = hitboxType
-        this.hitboxType = hitboxType
     }
     update() {
         throw new Error("Pattern::update() not overridden")

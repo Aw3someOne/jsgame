@@ -15,7 +15,16 @@ class GameObject {
     getVertices() {
         var vertices = []
         for (let i = 0; i < hitBoxes[this.hitboxType].vertices.length; i++) {
-            vertices[i] = this.position.add(hitBoxes[this.hitboxType].vertices[i])
+            /*
+             * broken 
+            if (this.rotation == 0) {
+                vertices[i] = this.position.add(hitBoxes[this.hitboxType].vertices[i])
+            } else {
+                var tmp = this.position.add(hitBoxes[this.hitboxType].vertices[i])
+                vertices[i] = tmp.rotateAbout(this.getCenter(), this.rotation)
+            }
+            */
+                vertices[i] = this.position.add(hitBoxes[this.hitboxType].vertices[i])
         }
         return vertices
     }
@@ -30,7 +39,7 @@ class GameObject {
                 this.position.y + hitBoxes[this.hitboxType].height / 2)
             context.rotate(this.rotation)
             context.drawImage(
-                bulletSheet,
+                hitBoxes[this.hitboxType].src,
                 hitBoxes[this.hitboxType].x,
                 hitBoxes[this.hitboxType].y,
                 hitBoxes[this.hitboxType].width,
@@ -42,7 +51,7 @@ class GameObject {
             context.restore()
         } else {
             context.drawImage(
-                bulletSheet,
+                hitBoxes[this.hitboxType].src,
                 hitBoxes[this.hitboxType].x,
                 hitBoxes[this.hitboxType].y,
                 hitBoxes[this.hitboxType].width,
@@ -79,12 +88,7 @@ class PlayerBullet extends Bullet {
         super(position, velocity, hitboxType, rotation)
     }
     checkCollision() {
-        var dist = calculateDistance(this.getCenter(), enemy.getCenter())
-        if (dist < hitBoxes[this.hitboxType].radius + hitBoxes[enemy.hitboxType].radius) {
-            enemy.health--
-            return true
-        }
-        return false
+        return (collisionTest(this, enemy))
     }
     redraw() {
         super.redraw(playerBulletContext)
@@ -97,13 +101,6 @@ class EnemyBullet extends Bullet {
     }
     checkCollision() {
         return (collisionTest(this, player))
-        /*
-        var dist = calculateDistance(this.getCenter(), player.getCenter())
-        if (dist < hitBoxes[this.hitboxType].radius + hitBoxes[player.hitboxType].radius) {
-            clearInterval(mainTimer)
-            keys = []
-        }
-        */
     }
 }
 
@@ -209,7 +206,7 @@ class Enemy extends GameObject {
 }
 
 class Boss extends Enemy {
-    constructor(position = new Vector(), hitboxType = HitBoxType.GREEN62, health = 500) {
+    constructor(position = new Vector(), hitboxType = HitBoxType.GREENBOSS76X82, health = 500) {
         super(position, hitboxType, health)
         this.states.push(new BossMultiFlowerState(this))
         this.states.push(new TransitionState(this, 2, new Vector(400 - 31, 30), 300))

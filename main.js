@@ -2,6 +2,7 @@
 
 const SHIPPNG = "img/ship.png"
 const BULLETPNG = "img/bullets.png"
+const BOSSPNG = "img/boss.png"
 const LASER = "sfx/Laser2.wav"
 const COREHIT = "sfx/CoreHit3.wav"
 const SPELLCARD = "sfx/053.wav" // better than SPELLCARD.wav
@@ -61,6 +62,8 @@ shipSheet.src = SHIPPNG
 var shipCount = 4
 var bulletSheet = new Image(257, 355)
 bulletSheet.src = BULLETPNG
+var bossSheet = new Image(76, 82)
+bossSheet.src = BOSSPNG
 
 var bgm = new Audio("bgm/alien.mp3")
 
@@ -112,6 +115,11 @@ var vKunai = [ new Vector(1, 8),
             new Vector(4, 14),
             new Vector(3, 14), ]
 
+var v76x82 = [ new Vector(0, 20),
+            new Vector(75, 20),
+            new Vector(61, 81),
+            new Vector(14, 81), ]
+
 const HitBoxType = {
     BLUE12:     0,
     BLUE16:     1,
@@ -124,6 +132,7 @@ const HitBoxType = {
     GREEN62:    62,
     RED8X16:    816,
     REDKUNAI:   666,
+    GREENBOSS76X82: 76,
 }
 
 hitBoxes[HitBoxType.BLUE12] =
@@ -148,6 +157,7 @@ hitBoxes[HitBoxType.RED8X16] =
         new HitBox(bulletSheet, new Vector(37, 85), new Vector(8, 16), 0, v8x16) 
 hitBoxes[HitBoxType.REDKUNAI] =
         new HitBox(bulletSheet, new Vector(37, 102), new Vector(8, 16), 0, vKunai)
+hitBoxes[HitBoxType.GREENBOSS76X82] = new HitBox(bossSheet, new Vector(), new Vector(76, 82), 0, v76x82)
 
 onload = function() {
     mainDiv = document.createElement("div")
@@ -212,8 +222,6 @@ onload = function() {
 }
 
 function gameStart() {
-            //player.redraw(playerContext)
-            //enemy.redraw(enemyContext)
     bgm.play()
 }
 

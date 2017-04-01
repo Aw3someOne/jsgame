@@ -25,6 +25,16 @@ class Vector {
         normal.y /= magnitude
         return normal
     }
+    /*
+    rotateAbout(ful, angle) {
+        var t = this.subtract(ful)
+        var c = Math.cos(angle)
+        var s = Math.sin(angle)
+        var r = new Vector(t.x * c - t.y * s,
+            t.x * s + t.y * c)
+        return r.add(ful)        
+    }
+    */
     dot(v2) {
         return this.x * v2.x + this.y * v2.y
     }
