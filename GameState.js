@@ -14,11 +14,7 @@ class TitleScreenGameState extends GameState {
     update() {
         uiContext.clearRect(0, 0, playerCanvas.width, playerCanvas.height)
         if (keys[ENTER]) {
-            var chime = new Audio(MENUCHIME)
-            chime.onended = function() {
-                bgm.play()
-            }
-            chime.play()
+            menuchimesfx.play()
             enemy.health = 0
             currentGameState = bossInitializationState
             return
@@ -35,6 +31,7 @@ class BossInitializationState extends GameState {
         super()
     }
     update() {
+        uiContext.clearRect(0, 0, enemyBulletCanvas.width, enemyBulletCanvas.height)
         enemy.health += deltaTime * 0.500
         if (enemy.health >= enemy.maxHealth) {
             enemy.health = enemy.maxHealth
@@ -101,16 +98,7 @@ class NormalGameState extends GameState {
                 continue
             }
             if (enemyBullets[i].checkCollision()) {
-                var sfx = new Audio(PLAYERDEATH)
-                sfx.play()
-                /*
-                uiContext.beginPath()
-                uiContext.font = "30px Arial"
-                uiContext.textAlign = "center"
-                uiContext.fillStyle = "#000000"
-                uiContext.fillText("You died", uiCanvas.width / 2, 200)
-                uiContext.stroke()
-                */
+                deathsfx.play()
                 uiContext.drawImage(diededText, 144, 200)
                 clearInterval(mainTimer)
                 keys = []

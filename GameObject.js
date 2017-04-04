@@ -233,14 +233,15 @@ class Boss extends Enemy {
     }
     redraw(context = enemyContext) {
         super.redraw(context)
+        uiContext.drawImage(enemyText, 0, 0)
         if (this.health > 0) {
-            uiContext.fillStyle = "#FFFF00"
-            uiContext.fillRect(100, 10, (WIDTH - 2 * 100) * this.health / this.maxHealth, 10)
-            uiContext.beginPath()
-            uiContext.rect(100, 10, (WIDTH - 2 * 100) * this.health / this.maxHealth, 10)
-            uiContext.font = "30px Arial"
-            uiContext.fillText(this.statesRemaining, 50, 30)
-            uiContext.stroke()
+            uiContext.fillStyle = "#00FF00"
+            uiContext.fillRect(110, 10, (WIDTH - 2 * 110) * this.health / this.maxHealth, 10)
+            var stateimg = zeroText
+            if (this.statesRemaining == 1) {
+                stateimg = oneText
+            }  
+            uiContext.drawImage(stateimg, 90, 10)
         }
     }
 }

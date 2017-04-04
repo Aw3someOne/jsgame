@@ -233,6 +233,8 @@ class BossSpiralState extends EnemyState {
         if (this.enemy.health <= 0) {
             var sfx = new Audio(SPELLCARD)
             sfx.play()
+            clearInterval(mainTimer)
+            uiContext.drawImage(wonneredText, 275, 200)
         }
         this.currentWait -= deltaTime
         if (this.shooting) {
@@ -250,33 +252,6 @@ class BossSpiralState extends EnemyState {
                 this.patterns[3].currentCooldown = 0
                 this.currentdest = ++this.currentdest % this.points.length
             }
-        }
-    }
-}
-
-class BossStateOne extends EnemyState {
-    constructor(enemy) {
-        super(enemy)
-        this.points = []
-        this.points.push(new Vector(400 - 31, 30))
-        this.points.push(new Vector(700 - 31, 100))
-        this.points.push(new Vector(400 - 31, 170))
-        this.points.push(new Vector(100 - 31, 100))
-        this.shooting = true
-        this.hitboxTypes = []
-        this.hitboxTypes.push(HitBoxType.RED22)
-        this.hitboxTypes.push(HitBoxType.RED22)
-        this.hitboxTypes.push(HitBoxType.RED22)
-    }
-    update() {
-        if (this.shooting) {
-            for (let i = 0; i < this.patterns.length; i++) {
-                this.patterns[i].update()
-            }
-        }
-        if (enemy.moveTowards(this.points[this.currentdest], 150)) {
-            this.currentdest = ++this.currentdest % this.points.length
-            this.shooting = true
         }
     }
 }

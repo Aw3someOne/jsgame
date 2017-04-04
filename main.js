@@ -9,6 +9,15 @@ const STAR1PNG = "img/Star1.png"
 const STAR2PNG = "img/Star2.png"
 const BGPNG = "img/BG_2.png"
 const DIEDEDPNG = "img/dieded.png"
+const WONNEREDPNG = "img/wonnered.png"
+
+const ZEROPNG = "img/0.png"
+const ONEPNG = "img/1.png"
+const TWOPNG = "img/2.png"
+const THREEPNG = "img/3.png"
+const FOURPNG = "img/4.png"
+const ENEMYPNG = "img/enemy.png"
+
 const LASER = "sfx/Laser2.wav"
 const COREHIT = "sfx/CoreHit3.wav"
 const SPELLCARD = "sfx/053.wav" // better than SPELLCARD.wav
@@ -69,8 +78,19 @@ var titleText = new Image(695, 114)
 titleText.src = TITLEPNG
 var enterText = new Image(510, 51)
 enterText.src = ENTERPNG
+var wonneredText = new Image(250, 47)
+wonneredText.src = WONNEREDPNG
 var diededText = new Image(512, 54)
 diededText.src = DIEDEDPNG
+
+var zeroText = new Image(18, 18)
+zeroText.src = ZEROPNG
+var oneText = new Image(12, 18)
+oneText.src = ONEPNG
+var twoText = new Image(16, 18)
+twoText.src = TWOPNG
+var enemyText = new Image(84, 32)
+enemyText.src = ENEMYPNG
 
 var bgSheet = new Image(800, 2560)
 bgSheet.src = BGPNG
@@ -93,6 +113,11 @@ var bossSheet = new Image(76, 82)
 bossSheet.src = BOSSPNG
 
 var bgm = new Audio("bgm/alien.mp3")
+var menuchimesfx = new Audio(MENUCHIME)
+menuchimesfx.onended = function() {
+    bgm.play()
+}
+var deathsfx = new Audio(PLAYERDEATH);
 
 var laserPool = new AudioPool(LASER, 50)
 var corehitPool = new AudioPool(COREHIT, 50)
