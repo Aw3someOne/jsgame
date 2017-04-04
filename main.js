@@ -1,12 +1,18 @@
 "use strict"
 
+const TITLEPNG = "img/Welcome.png"
+const ENTERPNG = "img/EnterWhite.png"
 const SHIPPNG = "img/ship.png"
 const BULLETPNG = "img/bullets.png"
 const BOSSPNG = "img/boss.png"
+const STAR1PNG = "img/Star1.png"
+const STAR2PNG = "img/Star2.png"
+const BGPNG = "img/BG_2.png"
 const LASER = "sfx/Laser2.wav"
 const COREHIT = "sfx/CoreHit3.wav"
 const SPELLCARD = "sfx/053.wav" // better than SPELLCARD.wav
 const PLAYERDEATH = "sfx/DEAD.wav" // or 071
+const MENUCHIME = "sfx/048.wav"
 
 const DELAY = 1
 const WIDTH = 800
@@ -20,6 +26,7 @@ const UP = 38
 const RIGHT = 39
 const DOWN = 40
 
+const x = 88
 const b = 66
 const c = 67
 
@@ -57,6 +64,22 @@ var enemyBullets = []
 var player
 var enemy
 
+var titleText = new Image(695, 114)
+titleText.src = TITLEPNG
+var enterText = new Image(510, 51)
+enterText.src = ENTERPNG
+var bgSheet = new Image(800, 2560)
+bgSheet.src = BGPNG
+var star1Sheet = new Image(800, 600)
+star1Sheet.src = STAR1PNG
+var star2Sheet = new Image(400, 446)
+star2Sheet.src = STAR2PNG
+var bgPattern
+var star1Pattern
+var star2Pattern
+var bgOffset = 0
+var star1Offset = 0
+var star2Offset = 0
 var shipSheet = new Image(256, 68)
 shipSheet.src = SHIPPNG
 var shipCount = 4
@@ -198,6 +221,10 @@ onload = function() {
     uiCanvas.width = WIDTH
     uiCanvas.height = HEIGHT
     uiContext = uiCanvas.getContext("2d")
+
+    bgPattern = graphicsContext.createPattern(bgSheet, "repeat")
+    star1Pattern = graphicsContext.createPattern(star1Sheet, "repeat")
+    star2Pattern = graphicsContext.createPattern(star2Sheet, "repeat")
 
     mainDiv.appendChild(graphicsCanvas)
     mainDiv.appendChild(enemyBulletCanvas)

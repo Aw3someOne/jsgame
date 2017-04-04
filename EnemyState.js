@@ -151,10 +151,10 @@ class BossMultiFlowerState extends EnemyState {
         this.hitboxTypes.push(HitBoxType.PURPLE22)
         this.speeds = []
         for (let i = 0; i < this.hitboxTypes.length; i++) {
-            this.speeds[i] = 75 - 5 * i
+            this.speeds[i] = 175 - 5 * i
         }
         //this.patterns.push(new MultiFlowerPattern(enemy, 1000, 0, this.hitboxTypes, 16, this.speeds, Math.PI / 2, 150, true,  Math.PI / 64))
-        this.patterns.push(new MultiFlowerPattern(enemy, 1000, 0, this.hitboxTypes, 16, this.speeds, Math.PI / 2, 150, true,  9000))
+        this.patterns.push(new MultiFlowerPattern(enemy, 1000, 0, this.hitboxTypes, 32, this.speeds, Math.PI / 2, 150, true,  9000))
     }
     update() {
         if (this.enemy.health <= 0) {
@@ -186,11 +186,30 @@ class BossCurtainState extends EnemyState {
     constructor(enemy) {
         super(enemy)
         this.points = []
-        this.points.push(new Vector(100 - 31, 100))
-        this.points.push(new Vector(700 - 31, 100))
-        this.currestdest = 0
+        this.points.push(new Vector(700 - 31, 200))
+        this.points.push(new Vector(100 - 31, 350))
+        this.currentdest = 0
         this.shooting = true
-        this.hitboxTypes.push(HitBoxType.RED22)
+        this.patterns.push(new SpiralPattern(enemy, 1000, 0, HitBoxType.RED22, 120, 100, Math.PI / 2, 0, 15))
+    }
+    update() {
+        if (this.enemy.health <= 0) {
+            var sfx = new Audio(SPELLCARD)
+            sfx.play()
+            this.enemy.currentState = this.enemy.states[3]
+            console.log("moving to next stage")
+            enemyBullets = []
+            return
+        }
+        if (this.shooting) {
+            for (let i = 0; i < this.patterns.length; i++) {
+                this.patterns[i].update()
+            }
+        }
+        if (this.enemy.moveTowards(this.points[this.currentdest], 400)) {
+            this.patterns[0].currentCooldown = 0
+            this.currentdest = ++this.currentdest % this.points.length
+        }
     }
 }
 
@@ -206,13 +225,14 @@ class BossSpiralState extends EnemyState {
         this.shooting = true
         this.patterns = []
         this.patterns.push(new SpiralPattern(enemy, 1000, 0, HitBoxType.PURPLE22, 120, 100, Math.PI / 2, Math.PI / 40, 15))
-        this.patterns.push(new SpiralPattern(enemy, 1000, 0, HitBoxType.YELLOW22, 120, 100, -Math.PI / 2, Math.PI / 40, 15))
+        this.patterns.push(new SpiralPattern(enemy, 1000, 0, HitBoxType.RED22, 120, 100, Math.PI, Math.PI / 40, 15))
+        this.patterns.push(new SpiralPattern(enemy, 1000, 0, HitBoxType.YELLOW22, 120, 100, 3* Math.PI / 2, Math.PI / 40, 15))
+        this.patterns.push(new SpiralPattern(enemy, 1000, 0, HitBoxType.CYAN22, 120, 100, 0, Math.PI / 40, 15))
     }
     update() {
         if (this.enemy.health <= 0) {
             var sfx = new Audio(SPELLCARD)
             sfx.play()
-            throw new Error("not implemented")
         }
         this.currentWait -= deltaTime
         if (this.shooting) {
@@ -226,6 +246,8 @@ class BossSpiralState extends EnemyState {
                 this.shooting = true
                 this.patterns[0].currentCooldown = 0
                 this.patterns[1].currentCooldown = 0
+                this.patterns[2].currentCooldown = 0
+                this.patterns[3].currentCooldown = 0
                 this.currentdest = ++this.currentdest % this.points.length
             }
         }

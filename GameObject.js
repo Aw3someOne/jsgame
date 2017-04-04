@@ -149,7 +149,7 @@ class Player extends GameObject {
                 this.currentGunCooldown = this.gunCooldown
             }
         }
-        if (keys[b]) {
+        if (keys[x]) {
             if (this.currentBombCooldown <= 0 && this.bombs > 0) {
                 var sfx = new Audio(SPELLCARD)
                 sfx.play()
@@ -206,11 +206,13 @@ class Enemy extends GameObject {
 }
 
 class Boss extends Enemy {
-    constructor(position = new Vector(), hitboxType = HitBoxType.GREENBOSS76X82, health = 500) {
+    constructor(position = new Vector(), hitboxType = HitBoxType.GREENBOSS76X82, health = 1000) {
         super(position, hitboxType, health)
         this.states.push(new BossMultiFlowerState(this))
         this.states.push(new TransitionState(this, 2, new Vector(400 - 31, 30), 300))
         this.states.push(new BossSpiralState(this))
+        this.states.push(new TransitionState(this, 4, new Vector(400 - 31, 30), 300))
+        this.states.push(new BossCurtainState(this))
         this.currentState = this.states[0]
         this.statesRemaining = 1
     }
