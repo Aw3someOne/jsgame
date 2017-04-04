@@ -8,6 +8,7 @@ const BOSSPNG = "img/boss.png"
 const STAR1PNG = "img/Star1.png"
 const STAR2PNG = "img/Star2.png"
 const BGPNG = "img/BG_2.png"
+const DIEDEDPNG = "img/dieded.png"
 const LASER = "sfx/Laser2.wav"
 const COREHIT = "sfx/CoreHit3.wav"
 const SPELLCARD = "sfx/053.wav" // better than SPELLCARD.wav
@@ -68,6 +69,9 @@ var titleText = new Image(695, 114)
 titleText.src = TITLEPNG
 var enterText = new Image(510, 51)
 enterText.src = ENTERPNG
+var diededText = new Image(512, 54)
+diededText.src = DIEDEDPNG
+
 var bgSheet = new Image(800, 2560)
 bgSheet.src = BGPNG
 var star1Sheet = new Image(800, 600)

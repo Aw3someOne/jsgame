@@ -103,12 +103,15 @@ class NormalGameState extends GameState {
             if (enemyBullets[i].checkCollision()) {
                 var sfx = new Audio(PLAYERDEATH)
                 sfx.play()
+                /*
                 uiContext.beginPath()
                 uiContext.font = "30px Arial"
                 uiContext.textAlign = "center"
                 uiContext.fillStyle = "#000000"
                 uiContext.fillText("You died", uiCanvas.width / 2, 200)
                 uiContext.stroke()
+                */
+                uiContext.drawImage(diededText, 144, 200)
                 clearInterval(mainTimer)
                 keys = []
             }
