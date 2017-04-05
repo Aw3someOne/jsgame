@@ -10,6 +10,8 @@ class GameState {
 class TitleScreenGameState extends GameState {
     constructor() {
         super()
+        this.fadeDirection = -1
+        this.alpha = 1
     }
     update() {
         uiContext.clearRect(0, 0, playerCanvas.width, playerCanvas.height)
@@ -23,7 +25,15 @@ class TitleScreenGameState extends GameState {
         graphicsContext.fillStyle = bgPattern
         graphicsContext.fillRect(0, 0, graphicsCanvas.width, graphicsCanvas.height)
         uiContext.drawImage(titleText, 52, 100)
+        this.alpha = this.alpha + this.fadeDirection * 0.00075 * deltaTime
+        if (!(0 <= this.alpha && this.alpha <= 1)) {
+            this.fadeDirection *= -1
+            this.alpha = Math.min(1, Math.max(0, this.alpha))
+        }
+        uiContext.save()
+        uiContext.globalAlpha = this.alpha
         uiContext.drawImage(enterText, 145, 700)
+        uiContext.restore()
     }
 }
 
