@@ -14,6 +14,7 @@ class TitleScreenGameState extends GameState {
     update() {
         uiContext.clearRect(0, 0, playerCanvas.width, playerCanvas.height)
         if (keys[ENTER]) {
+            titlebgm.pause()
             menuchimesfx.play()
             enemy.health = 0
             currentGameState = bossInitializationState

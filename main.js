@@ -18,12 +18,15 @@ const THREEPNG = "img/3.png"
 const FOURPNG = "img/4.png"
 const ENEMYPNG = "img/enemy.png"
 const TITLENUMBERSPNG = "img/numbers.png"
+const LETTERSPNG = "img/WhiteNumbersandLetters.png"
+const BORDERPNG = "img/border.png"
 
 const LASER = "sfx/Laser2.wav"
 const COREHIT = "sfx/CoreHit3.wav"
 const SPELLCARD = "sfx/053.wav" // better than SPELLCARD.wav
 const PLAYERDEATH = "sfx/DEAD.wav" // or 071
 const MENUCHIME = "sfx/048.wav"
+const TITLEBGM = "bgm/shipselect2.ogg"
 
 const DELAY = 1
 const WIDTH = 800
@@ -99,6 +102,12 @@ enemyText.src = ENEMYPNG
 var titleNumbersSheet = new Image(320, 34)
 titleNumbersSheet.src = TITLENUMBERSPNG
 
+var lettersSheet = new Image(512, 224)
+lettersSheet.src = LETTERSPNG
+
+var borderSheet = new Image(720, 1000)
+borderSheet.src = BORDERPNG
+
 var bgSheet = new Image(800, 2560)
 bgSheet.src = BGPNG
 var star1Sheet = new Image(800, 600)
@@ -119,6 +128,10 @@ bulletSheet.src = BULLETPNG
 var bossSheet = new Image(76, 82)
 bossSheet.src = BOSSPNG
 
+var titlebgm = new Audio(TITLEBGM)
+titlebgm.onended = function() {
+    titlebgm.play()
+}
 var bgm = new Audio("bgm/alien.mp3")
 var menuchimesfx = new Audio(MENUCHIME)
 menuchimesfx.onended = function() {
@@ -289,6 +302,8 @@ onload = function() {
 
     enemy = new Boss()
     enemy.position = new Vector((WIDTH - hitBoxes[enemy.hitboxType].width) / 2, 50)
+
+    titlebgm.play()
     mainTimer = setInterval(mainLoop, 1)
 
     getTimes()

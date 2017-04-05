@@ -1,6 +1,6 @@
 <?php
 
-$name = strip_tags(trim($_POST['name']));
+$name = strtolower(strip_tags(trim($_POST['name'])));
 $time = strip_tags(trim($_POST['time']));
 
 $host = 'localhost';
@@ -16,3 +16,8 @@ VALUES ('$name', $time)
 ";
 
 mysqli_query($conn, $sql) or die(mysqli_error($conn));
+
+$result = array();
+$result['status'] = 'success';
+
+echo json_encode($result);

@@ -149,6 +149,7 @@ class Player extends GameObject {
                 this.currentGunCooldown = this.gunCooldown
             }
         }
+        /*
         if (keys[x]) {
             if (this.currentBombCooldown <= 0 && this.bombs > 0) {
                 var sfx = new Audio(SPELLCARD)
@@ -158,6 +159,7 @@ class Player extends GameObject {
                 this.bombs--
             }
         }
+        */
         moveVector = moveVector.normalize()
         this.position.x += moveVector.x * speed * deltaSeconds
         this.position.y += moveVector.y * speed * deltaSeconds
