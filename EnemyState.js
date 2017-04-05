@@ -235,6 +235,9 @@ class BossSpiralState extends EnemyState {
             sfx.play()
             clearInterval(mainTimer)
             uiContext.drawImage(wonneredText, 275, 200)
+            var time = Date.now() - starttime
+            var name = prompt("Your Time: " + (time / 1000) + "s\nEnter Your Name")
+            insertTime(name, time)
         }
         this.currentWait -= deltaTime
         if (this.shooting) {

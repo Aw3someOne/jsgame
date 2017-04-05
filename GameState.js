@@ -36,6 +36,7 @@ class BossInitializationState extends GameState {
         if (enemy.health >= enemy.maxHealth) {
             enemy.health = enemy.maxHealth
             currentGameState = normalGameState
+            starttime = Date.now()
         }
         player.redraw(playerContext)
         enemy.redraw(enemyContext)

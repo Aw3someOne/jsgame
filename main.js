@@ -17,6 +17,7 @@ const TWOPNG = "img/2.png"
 const THREEPNG = "img/3.png"
 const FOURPNG = "img/4.png"
 const ENEMYPNG = "img/enemy.png"
+const TITLENUMBERSPNG = "img/numbers.png"
 
 const LASER = "sfx/Laser2.wav"
 const COREHIT = "sfx/CoreHit3.wav"
@@ -59,6 +60,9 @@ var enemyBulletContext
 var uiCanvas
 var uiContext
 
+var leaderCanvas
+var leaderContext
+
 var titleScreenGameState
 var bossInitializationState
 var normalGameState
@@ -91,6 +95,9 @@ var twoText = new Image(16, 18)
 twoText.src = TWOPNG
 var enemyText = new Image(84, 32)
 enemyText.src = ENEMYPNG
+
+var titleNumbersSheet = new Image(320, 34)
+titleNumbersSheet.src = TITLENUMBERSPNG
 
 var bgSheet = new Image(800, 2560)
 bgSheet.src = BGPNG
@@ -125,6 +132,7 @@ var corehitPool = new AudioPool(COREHIT, 50)
 var mainTimer
 
 var hitBoxes = []
+var starttime
 
 var v12x12 = [ new Vector(2, 4),
             new Vector(4, 2),
@@ -255,12 +263,19 @@ onload = function() {
     star1Pattern = graphicsContext.createPattern(star1Sheet, "repeat")
     star2Pattern = graphicsContext.createPattern(star2Sheet, "repeat")
 
+    leaderCanvas = document.createElement("canvas")
+    leaderCanvas.width = WIDTH
+    leaderCanvas.height = HEIGHT
+    leaderCanvas.id = "leaderboard"
+    leaderContext = leaderCanvas.getContext("2d")
+
     mainDiv.appendChild(graphicsCanvas)
     mainDiv.appendChild(enemyBulletCanvas)
     mainDiv.appendChild(playerBulletCanvas)
     mainDiv.appendChild(playerCanvas)
     mainDiv.appendChild(enemyCanvas)
     mainDiv.appendChild(uiCanvas)
+    mainDiv.appendChild(leaderCanvas)
 
     titleScreenGameState = new TitleScreenGameState()
     bossInitializationState = new BossInitializationState()
@@ -275,6 +290,8 @@ onload = function() {
     enemy = new Boss()
     enemy.position = new Vector((WIDTH - hitBoxes[enemy.hitboxType].width) / 2, 50)
     mainTimer = setInterval(mainLoop, 1)
+
+    getTimes()
 }
 
 function gameStart() {
