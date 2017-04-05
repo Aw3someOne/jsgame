@@ -70,6 +70,9 @@ var uiContext
 var leaderCanvas
 var leaderContext
 
+var mainCanvas
+var mainContext
+
 var titleScreenGameState
 var bossInitializationState
 var normalGameState
@@ -248,11 +251,13 @@ hitBoxes[HitBoxType.GREENBOSS76X82] = new HitBox(bossSheet, new Vector(), new Ve
 onload = function() {
     mainDiv = document.createElement("div")
     mainDiv.id = "main"
+    /*
     mainDiv.style.minWidth = WIDTH
     mainDiv.style.maxWidth = WIDTH
     mainDiv.style.minHeight = HEIGHT
     mainDiv.style.maxHeight = HEIGHT
     mainDiv.style.backgroundColor = "CCC"
+    */
     document.body.appendChild(mainDiv)
 
     graphicsCanvas = document.createElement("canvas")
@@ -292,9 +297,9 @@ onload = function() {
     leaderCanvas = document.createElement("canvas")
     leaderCanvas.width = 720
     leaderCanvas.height = HEIGHT
-    leaderCanvas.id = "leaderboard"
     leaderContext = leaderCanvas.getContext("2d")
 
+/*
     mainDiv.appendChild(graphicsCanvas)
     mainDiv.appendChild(enemyBulletCanvas)
     mainDiv.appendChild(playerBulletCanvas)
@@ -302,6 +307,27 @@ onload = function() {
     mainDiv.appendChild(enemyCanvas)
     mainDiv.appendChild(uiCanvas)
     mainDiv.appendChild(leaderCanvas)
+*/
+
+    mainCanvas = document.createElement("canvas")
+    mainCanvas.width = 1520
+    mainCanvas.height = 1000
+    mainCanvas.id = "mainCanvas"
+
+    mainContext = mainCanvas.getContext("2d")
+    mainDiv.appendChild(mainCanvas)
+
+    var ratio = window.innerWidth / window.innerHeight
+
+    mainCanvas.style.maxHeight = "1000px"
+    mainCanvas.style.maxWidth = "1520px"
+    if (ratio > 1520 / 1000) { // wider than desired
+        mainCanvas.style.width = "auto"
+        mainCanvas.style.height = "100%"
+    } else { // taller
+        mainCanvas.style.width = "100%"
+        mainCanvas.style.height = "auto"
+    }
 
     titleScreenGameState = new TitleScreenGameState()
     bossInitializationState = new BossInitializationState()
@@ -335,10 +361,14 @@ function mainLoop() {
     }
     currentGameState.update()
     timeOfLastUpdate = time
-}
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    mainContext.clearRect(0, 0, mainCanvas.width, mainCanvas.height)
+    mainContext.drawImage(graphicsCanvas, 0, 0) 
+    mainContext.drawImage(playerBulletCanvas, 0, 0)
+    mainContext.drawImage(enemyBulletCanvas, 0, 0)
+    mainContext.drawImage(playerCanvas, 0, 0)
+    mainContext.drawImage(enemyCanvas, 0, 0)
+    mainContext.drawImage(uiCanvas, 0, 0)
+    mainContext.drawImage(leaderCanvas, 800, 0)
 }
 
 onkeydown = function(e) {
