@@ -37,6 +37,10 @@ function getTimes() {
         success: function(data) {
             leaderContext.clearRect(0, 0, leaderCanvas.width, leaderCanvas.height)
             leaderContext.drawImage(borderSheet, 0, 0)
+            leaderContext.drawImage(hashText, 0, 0, 64, 32, col0End - 64, 96, 64, 32)
+            leaderContext.drawImage(nameText, 0, 0, 128, 32, col1End - 128, 96, 128, 32)
+            leaderContext.drawImage(timeText, 0, 0, 128, 32, col2End - 128, 96, 128, 32) 
+
             $.each(data, function(k, v) {
                 var name = v['name'].toLowerCase()
                 var akey = 'a'.charCodeAt(0)

@@ -21,6 +21,10 @@ const TITLENUMBERSPNG = "img/numbers.png"
 const LETTERSPNG = "img/WhiteNumbersandLetters.png"
 const BORDERPNG = "img/border.png"
 
+const NAMEPNG = "img/Name.png"
+const TIMEPNG = "img/Time.png"
+const HASHHASHPNG = "img/HashHash.png"
+
 const LASER = "sfx/Laser2.wav"
 const COREHIT = "sfx/CoreHit3.wav"
 const SPELLCARD = "sfx/053.wav" // better than SPELLCARD.wav
@@ -98,6 +102,15 @@ var twoText = new Image(16, 18)
 twoText.src = TWOPNG
 var enemyText = new Image(84, 32)
 enemyText.src = ENEMYPNG
+
+var nameText = new Image(128, 32)
+nameText.src = NAMEPNG
+
+var timeText = new Image(128, 32)
+timeText.src = TIMEPNG
+
+var hashText = new Image(64, 32)
+hashText.src = HASHHASHPNG
 
 var titleNumbersSheet = new Image(320, 34)
 titleNumbersSheet.src = TITLENUMBERSPNG
