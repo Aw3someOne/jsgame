@@ -236,7 +236,7 @@ class BossSpiralState extends EnemyState {
             clearInterval(mainTimer)
             uiContext.drawImage(wonneredText, 275, 200)
             var time = Date.now() - starttime
-            var name = prompt("Your Time: " + (time / 1000) + "s\nEnter Your Name")
+            var name = prompt("Your Time: " + (time / 1000) + "s\nEnter Your Name (letters only, 9 chars max)")
             insertTime(name, time)
         }
         this.currentWait -= deltaTime

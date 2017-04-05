@@ -29,6 +29,7 @@ function getTimes() {
     var col2End = 696
     var colPadding = 10
     var letterOffset = 49 // A is sprite 49
+    var numberOffset = 32 // 0 is sprite 32
     var lettersPerRow = 16
     $.ajax({
         type: 'post',

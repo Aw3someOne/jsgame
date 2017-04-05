@@ -1,7 +1,8 @@
 <?php
 
 $name = strtolower(strip_tags(trim($_POST['name'])));
-$time = strip_tags(trim($_POST['time']));
+$name = substr($name, 0, 9);
+$time = strip_tags(trim($_POST['time']  ));
 
 $host = 'localhost';
 $user = 'headhunt_danmaku';
