@@ -290,7 +290,7 @@ onload = function() {
     star2Pattern = graphicsContext.createPattern(star2Sheet, "repeat")
 
     leaderCanvas = document.createElement("canvas")
-    leaderCanvas.width = WIDTH
+    leaderCanvas.width = 720
     leaderCanvas.height = HEIGHT
     leaderCanvas.id = "leaderboard"
     leaderContext = leaderCanvas.getContext("2d")
